@@ -8,8 +8,8 @@ namespace toppra {
 
 /// Boundary condition
 typedef struct {
-    int order;
-    Vector values;
+  int order;
+  Vector values;
 } BoundaryCond;
 
 /**
@@ -46,7 +46,8 @@ class PiecewisePolyPath : public GeometricPath {
    * @param times Vector of times in a strictly increasing order.
    * @param bc_type Boundary conditions at the curve start and end.
    */
-  PiecewisePolyPath(const Vectors &positions, const Vector &times, const std::array<BoundaryCond, 2> &bc_type);
+  PiecewisePolyPath(const Vectors &positions, const Vector &times,
+                    const std::array<BoundaryCond, 2> &bc_type);
 
   /**
    * /brief Evaluate the path at given position.
@@ -65,6 +66,8 @@ class PiecewisePolyPath : public GeometricPath {
   void serialize(std::ostream &O) const override;
   void deserialize(std::istream &I) override;
 
+  const Vector &getTimes() const override { return m_ts; }
+
   /**
    * \brief Construct a new Hermite polynomial.
    */
@@ -76,7 +79,8 @@ class PiecewisePolyPath : public GeometricPath {
   void initAsHermite(const Vectors &positions, const Vectors &velocities,
                      const std::vector<value_type> times);
   void computeCubicSplineCoefficients(const Vectors &positions, const Vector &times,
-          const std::array<BoundaryCond, 2> &bc_type, Matrices &coefficients);
+                                      const std::array<BoundaryCond, 2> &bc_type,
+                                      Matrices &coefficients);
   void reset();
   size_t findSegmentIndex(value_type pos) const;
   void checkInputArgs();
@@ -86,6 +90,7 @@ class PiecewisePolyPath : public GeometricPath {
   const Matrix &getCoefficient(size_t seg_index, int order) const;
   Matrices m_coefficients, m_coefficients_1, m_coefficients_2;
   std::vector<value_type> m_breakpoints;
+  Vector m_ts;
   int m_degree;
 };
 

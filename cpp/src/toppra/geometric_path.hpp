@@ -58,6 +58,10 @@ public:
     return m_dof;
   }
 
+  /** \brief Return the waypoint times.
+   */
+  virtual const Vector& getTimes() const = 0;
+
   /**
    * \brief Serialize path to stream.
    */

@@ -52,10 +52,6 @@ class Parametrizer : public GeometricPath {
 
   virtual ~Parametrizer() {}
 
-  /** \brief Return the waypoint times.
-   */
-  virtual const Vector& getTimes() const = 0;
-
  protected:
   // Input geometric path
   GeometricPathPtr m_path;

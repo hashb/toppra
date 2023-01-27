@@ -1,9 +1,9 @@
+#include <Eigen/Dense>
+#include <array>
 #include <iostream>
 #include <ostream>
 #include <toppra/geometric_path/piecewise_poly_path.hpp>
 #include <toppra/toppra.hpp>
-#include <Eigen/Dense>
-#include <array>
 
 #ifdef TOPPRA_OPT_MSGPACK
 #include <msgpack.hpp>
@@ -20,97 +20,102 @@ Matrix differentiateCoefficients(const Matrix &coefficients) {
   return deriv;
 }
 
-PiecewisePolyPath::PiecewisePolyPath(const Matrices & coefficients,
+PiecewisePolyPath::PiecewisePolyPath(const Matrices &coefficients,
                                      std::vector<value_type> breakpoints)
-    : GeometricPath (int(coefficients[0].cols())),
-      m_coefficients(coefficients), m_breakpoints(std::move(breakpoints)),
+    : GeometricPath(int(coefficients[0].cols())),
+      m_coefficients(coefficients),
+      m_breakpoints(std::move(breakpoints)),
       m_degree(int(coefficients[0].rows()) - 1) {
-
+  m_ts = Eigen::Map<Vector>(m_breakpoints.data(), m_breakpoints.size());
   checkInputArgs();
   computeDerivativesCoefficients();
 }
 
 PiecewisePolyPath::PiecewisePolyPath(const Vectors &positions, const Vector &times,
-        const std::array<BoundaryCond, 2> &bc_type) {
-    // Prepare input
-    checkInputArgs(positions, times, bc_type);
-    Matrices coefficients(times.size() - 1);
-    computeCubicSplineCoefficients(positions, times, bc_type, coefficients);
-    std::vector<value_type> breakpoints (times.data(), times.data() + times.size());
-    *this = PiecewisePolyPath(coefficients, breakpoints);
+                                     const std::array<BoundaryCond, 2> &bc_type) {
+  // Prepare input
+  checkInputArgs(positions, times, bc_type);
+
+  Matrices coefficients(times.size() - 1);
+  computeCubicSplineCoefficients(positions, times, bc_type, coefficients);
+  std::vector<value_type> breakpoints(times.data(), times.data() + times.size());
+  *this = PiecewisePolyPath(coefficients, breakpoints);
 }
 
-void PiecewisePolyPath::computeCubicSplineCoefficients(const Vectors &positions, const Vector &times,
-        const std::array<BoundaryCond, 2> &bc_type, Matrices &coefficients) {
-    // h(i) = t(i+1) - t(i)
-    Vector h (times.rows() - 1);
-    for (auto i = 0u; i < h.rows(); i++){
-        h(i) = times(i + 1) - times(i);
-    }
+void PiecewisePolyPath::computeCubicSplineCoefficients(
+    const Vectors &positions, const Vector &times,
+    const std::array<BoundaryCond, 2> &bc_type, Matrices &coefficients) {
+  // h(i) = t(i+1) - t(i)
+  Vector h(times.rows() - 1);
+  for (auto i = 0u; i < h.rows(); i++) {
+    h(i) = times(i + 1) - times(i);
+  }
 
-    // Construct the tri-diagonal matrix A based on spline continuity criteria
-    Matrix A = Matrix::Zero(times.rows(), times.rows());
-    for (auto i = 1u; i < A.rows() - 1; i++) {
-        A.row(i).segment(i - 1, 3) << h(i - 1), 2 * (h(i - 1) + h(i)), h(i);
-    }
+  // Construct the tri-diagonal matrix A based on spline continuity criteria
+  Matrix A = Matrix::Zero(times.rows(), times.rows());
+  for (auto i = 1u; i < A.rows() - 1; i++) {
+    A.row(i).segment(i - 1, 3) << h(i - 1), 2 * (h(i - 1) + h(i)), h(i);
+  }
 
-    // Construct B based on spline continuity criteria
-    Vectors B (positions.at(0).rows());
+  // Construct B based on spline continuity criteria
+  Vectors B(positions.at(0).rows());
+  for (auto i = 0u; i < B.size(); i++) {
+    B[i].resize(times.rows());
+    for (auto j = 1u; j < A.rows() - 1; j++) {
+      B[i](j) = 3 * (positions[j + 1](i) - positions[j](i)) / h(j) -
+                3 * (positions[j](i) - positions[j - 1](i)) / h(j - 1);
+    }
+  }
+
+  // Insert boundary conditions to A and B
+  if (bc_type[0].order == 1) {
+    A.row(0).segment(0, 2) << 2 * h(0), h(0);
     for (auto i = 0u; i < B.size(); i++) {
-        B[i].resize(times.rows());
-        for (auto j = 1u; j < A.rows() - 1; j++) {
-            B[i](j) = 3 * (positions[j + 1](i) - positions[j](i)) / h(j) -
-                      3 * (positions[j](i) - positions[j - 1](i)) / h(j - 1);
-        }
+      B[i](0) =
+          3 * (positions[1](i) - positions[0](i)) / h(0) - 3 * bc_type[0].values(i);
     }
+  } else if (bc_type[0].order == 2) {
+    A(0, 0) = 2;
+    for (auto i = 0u; i < B.size(); i++) {
+      B[i](0) = bc_type[0].values(i);
+    }
+  }
 
-    // Insert boundary conditions to A and B
-    if (bc_type[0].order == 1) {
-        A.row(0).segment(0, 2) << 2 * h(0), h(0);
-        for (auto i = 0u; i < B.size(); i++) {
-            B[i](0) = 3 * (positions[1](i) - positions[0](i)) / h(0) - 3 * bc_type[0].values(i);
-        }
+  if (bc_type[1].order == 1) {
+    A.row(A.rows() - 1).segment(A.cols() - 2, 2) << h(h.rows() - 1),
+        2 * h(h.rows() - 1);
+    for (auto i = 0u; i < B.size(); i++) {
+      B[i](B[i].rows() - 1) =
+          3 * bc_type[1].values(i) - 3 *
+                                         (positions[positions.size() - 1](i) -
+                                          positions[positions.size() - 2](i)) /
+                                         h(h.rows() - 1);
     }
-    else if (bc_type[0].order == 2) {
-        A(0, 0) = 2;
-        for (auto i = 0u; i < B.size(); i++) {
-            B[i](0) = bc_type[0].values(i);
-        }
+  } else if (bc_type[1].order == 2) {
+    A(A.rows() - 1, A.cols() - 1) = 2;
+    for (auto i = 0u; i < B.size(); i++) {
+      B[i](B[i].rows() - 1) = bc_type[1].values(i);
     }
+  }
 
-    if (bc_type[1].order == 1) {
-        A.row(A.rows() - 1).segment(A.cols() - 2, 2) << h(h.rows() - 1), 2 * h(h.rows() - 1);
-        for (auto i = 0u; i < B.size(); i++) {
-            B[i](B[i].rows() - 1) =
-                    3 * bc_type[1].values(i) -
-                    3 * (positions[positions.size() - 1](i) - positions[positions.size() - 2](i)) / h(h.rows() - 1);
-        }
-    }
-    else if (bc_type[1].order == 2) {
-        A(A.rows() - 1, A.cols() - 1) = 2;
-        for (auto i = 0u; i < B.size(); i++) {
-            B[i](B[i].rows() - 1) = bc_type[1].values(i);
-        }
-    }
+  // Solve AX = B
+  Vectors X(positions[0].rows());
+  for (auto i = 0u; i < X.size(); i++) {
+    X[i].resize(times.rows());
+    X[i] = A.colPivHouseholderQr().solve(B[i]);
+  }
 
-    // Solve AX = B
-    Vectors X (positions[0].rows());
-    for (auto i = 0u; i < X.size(); i++) {
-        X[i].resize(times.rows());
-        X[i] = A.colPivHouseholderQr().solve(B[i]);
+  // Insert spline coefficients
+  for (auto i = 0u; i < coefficients.size(); i++) {
+    coefficients[i].resize(4, positions[0].rows());
+    for (auto j = 0u; j < coefficients[i].cols(); j++) {
+      coefficients[i](0, j) = (X[j](i + 1) - X[j](i)) / (3 * h(i));
+      coefficients[i](1, j) = X[j](i);
+      coefficients[i](2, j) = (positions[i + 1](j) - positions[i](j)) / h(i) -
+                              h(i) / 3 * (2 * X[j](i) + X[j](i + 1));
+      coefficients[i](3, j) = positions[i](j);
     }
-
-    // Insert spline coefficients
-    for (auto i = 0u; i < coefficients.size() ; i++) {
-        coefficients[i].resize(4, positions[0].rows());
-        for (auto j = 0u; j < coefficients[i].cols(); j++) {
-            coefficients[i](0, j) = (X[j](i + 1) - X[j](i)) / (3 * h(i));
-            coefficients[i](1, j) = X[j](i);
-            coefficients[i](2, j) = (positions[i + 1](j) - positions[i](j)) / h(i) -
-                    h(i) / 3 * (2 * X[j](i) + X[j](i + 1));
-            coefficients[i](3, j) = positions[i](j);
-        }
-    }
+  }
 }
 
 Bound PiecewisePolyPath::pathInterval() const {
@@ -126,8 +131,7 @@ Vector PiecewisePolyPath::eval_single(value_type pos, int order) const {
   size_t seg_index = findSegmentIndex(pos);
   auto coeff = getCoefficient(seg_index, order);
   for (int power = 0; power < m_degree + 1; power++) {
-    v += coeff.row(power) *
-         pow(pos - m_breakpoints[seg_index], m_degree - power);
+    v += coeff.row(power) * pow(pos - m_breakpoints[seg_index], m_degree - power);
   }
   return v;
 }
@@ -145,16 +149,15 @@ Vectors PiecewisePolyPath::eval(const Vector &positions, int order) const {
 }
 
 size_t PiecewisePolyPath::findSegmentIndex(value_type pos) const {
-  if (pos > m_breakpoints[m_breakpoints.size()-1] || pos < m_breakpoints[0]) {
+  if (pos > m_breakpoints[m_breakpoints.size() - 1] || pos < m_breakpoints[0]) {
     std::ostringstream oss;
-    oss << "Position " << pos << " is outside of range [ " << m_breakpoints[0]
-      << ", " << m_breakpoints[m_breakpoints.size()-1] << ']';
+    oss << "Position " << pos << " is outside of range [ " << m_breakpoints[0] << ", "
+        << m_breakpoints[m_breakpoints.size() - 1] << ']';
     throw std::runtime_error(oss.str());
   }
   auto it = std::upper_bound(m_breakpoints.begin(), m_breakpoints.end(), pos);
   auto idx = std::distance(m_breakpoints.begin(), it) - 1;
-  if(idx < 0)
-    return 0;
+  if (idx < 0) return 0;
   return std::min<size_t>(idx, m_coefficients.size() - 1);
 }
 
@@ -173,58 +176,61 @@ void PiecewisePolyPath::checkInputArgs() {
 }
 
 void PiecewisePolyPath::checkInputArgs(const Vectors &positions, const Vector &times,
-        const std::array<BoundaryCond, 2> &bc_type) {
-    if (positions.size() != times.rows()) {
-        throw std::runtime_error("The length of 'positions' doesn't match the length of 'times'.");
+                                       const std::array<BoundaryCond, 2> &bc_type) {
+  if (positions.size() != times.rows()) {
+    throw std::runtime_error(
+        "The length of 'positions' doesn't match the length of 'times'.");
+  }
+  if (times.rows() < 2) {
+    throw std::runtime_error("'times' must contain at least 2 elements.");
+  }
+  for (size_t i = 1; i < positions.size(); i++) {
+    if (positions[i].rows() != positions[i - 1].rows()) {
+      throw std::runtime_error(
+          "The number of elements in each position has to be equal.");
     }
-    if (times.rows() < 2) {
-        throw std::runtime_error("'times' must contain at least 2 elements.");
+  }
+  Vector dtimes(times.rows() - 1);
+  for (auto i = 1u; i < times.rows(); i++) {
+    dtimes(i - 1) = times(i) - times(i - 1);
+    if (dtimes(i - 1) <= 0) {
+      throw std::runtime_error("'times' must be a strictly increasing sequence.");
     }
-    for (size_t i = 1; i < positions.size(); i++) {
-        if (positions[i].rows() != positions[i - 1].rows()) {
-            throw std::runtime_error("The number of elements in each position has to be equal.");
-        }
-    }
-    Vector dtimes (times.rows() - 1);
-    for (auto i = 1u; i < times.rows(); i++) {
-        dtimes(i - 1) = times(i) - times(i - 1);
-        if (dtimes(i - 1) <= 0) {
-            throw std::runtime_error("'times' must be a strictly increasing sequence.");
-        }
-    }
+  }
 
-    // Validate boundary conditions
-    size_t expected_deriv_size = positions[0].size();
-    for (const BoundaryCond &bc: bc_type) {
-        if (bc.order != 1 && bc.order != 2) {
-            throw std::runtime_error("The specified derivative order must be 1 or 2.");
-        }
-        if (bc.values.size() != expected_deriv_size) {
-            throw std::runtime_error(
-                    "`deriv_value` size " + std::to_string(bc.values.size()) + " is not the expected one " +
-                    std::to_string(expected_deriv_size) + ".");
-        }
+  // Validate boundary conditions
+  size_t expected_deriv_size = positions[0].size();
+  for (const BoundaryCond &bc : bc_type) {
+    if (bc.order != 1 && bc.order != 2) {
+      throw std::runtime_error("The specified derivative order must be 1 or 2.");
     }
+    if (bc.values.size() != expected_deriv_size) {
+      throw std::runtime_error(
+          "`deriv_value` size " + std::to_string(bc.values.size()) +
+          " is not the expected one " + std::to_string(expected_deriv_size) + ".");
+    }
+  }
 }
 
 void PiecewisePolyPath::computeDerivativesCoefficients() {
   m_coefficients_1.reserve(m_coefficients.size());
   m_coefficients_2.reserve(m_coefficients.size());
   for (size_t seg_index = 0; seg_index < m_coefficients.size(); seg_index++) {
-    m_coefficients_1.push_back(
-        differentiateCoefficients(m_coefficients[seg_index]));
-    m_coefficients_2.push_back(
-        differentiateCoefficients(m_coefficients_1[seg_index]));
+    m_coefficients_1.push_back(differentiateCoefficients(m_coefficients[seg_index]));
+    m_coefficients_2.push_back(differentiateCoefficients(m_coefficients_1[seg_index]));
   }
 }
 
 const Matrix &PiecewisePolyPath::getCoefficient(size_t seg_index, int order) const {
-  switch (order)
-  {
-    case 0: return m_coefficients.at(seg_index);
-    case 1: return m_coefficients_1.at(seg_index);
-    case 2: return m_coefficients_2.at(seg_index);
-    default: break;
+  switch (order) {
+    case 0:
+      return m_coefficients.at(seg_index);
+    case 1:
+      return m_coefficients_1.at(seg_index);
+    case 2:
+      return m_coefficients_2.at(seg_index);
+    default:
+      break;
   }
 
   return m_coefficients_2.at(seg_index);
@@ -326,4 +332,4 @@ PiecewisePolyPath PiecewisePolyPath::constructHermite(
   return path;
 }
 
-} // namespace toppra
+}  // namespace toppra
