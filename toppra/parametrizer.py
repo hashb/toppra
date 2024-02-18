@@ -85,6 +85,7 @@ class ParametrizeConstAccel(AbstractGeometricPath):
             scalar = True
         ss, vs, us, js = self._eval_params(ts)
 
+        # https://hungpham2511.github.io/toppra/notes.html#derivation-of-kinematical-quantities
         if order == 0:
             # q(t) = q(s(t))
             out = self._path(ss)
@@ -97,6 +98,7 @@ class ParametrizeConstAccel(AbstractGeometricPath):
                 self._path(ss, 1), us[:, np.newaxis]
             )
         elif order == 3:
+            # S-TOPP Page 6, eq. 28
             # q'''(t) = q'(s(t)) * s'''(t) + 3 * q''(s(t)) * s'(t) * s''(t) + q'''(s(t)) * s'(t)^3
             # TODO: check if this is correct
             out = (
@@ -152,7 +154,11 @@ class ParametrizeConstAccel(AbstractGeometricPath):
             ss.append(
                 self._ss[idx] + dt * self._velocities[idx] + 0.5 * dt**2 * self._us[idx]
             )
-        js.append(0)
+        js.append(
+            (us[idx - 1] - us[idx - 2])
+            * vs[idx - 1]
+            / (self._ss[idx - 1] - self._ss[idx - 2])
+        )
         return np.array(ss), np.array(vs), np.array(us), np.array(js)
 
     def plot_parametrization(self, show: bool = False, n_sample: int = 500) -> None:
