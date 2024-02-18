@@ -54,12 +54,13 @@ gridpoints = ta.interpolator.propose_gridpoints(
     max_iteration=500,
     min_nb_points=500,
 )
+gridpoints = np.linspace(0, 1, 10000)
 instance = algo.TOPPRA(
     [pc_vel, pc_acc],
     path,
     gridpoints=gridpoints,
-    parametrizer="ParametrizeConstAccel",
-    # parametrizer="ParametrizeSpline",
+    # parametrizer="ParametrizeConstAccel",
+    parametrizer="ParametrizeSpline",
 )
 jnt_traj = instance.compute_trajectory()
 assert jnt_traj is not None
@@ -69,7 +70,7 @@ jnt_traj = cast(ta.parametrizer.ParametrizeConstAccel, jnt_traj)
 # The output trajectory is an instance of
 # :class:`toppra.interpolator.AbstractGeometricPath`.
 
-jnt_traj.plot_parametrization(show=True)
+# jnt_traj.plot_parametrization(show=True)
 
 ts_sample = np.linspace(0, jnt_traj.duration, 100)
 qs_sample = jnt_traj(ts_sample)
@@ -87,19 +88,19 @@ for i in range(path.dof):
 from scipy.interpolate import CubicSpline
 
 # differentiate the spline
-cspline = CubicSpline(ts_sample, qs_sample, axis=0)
-spline = cspline(ts_sample, 0)
-d_spline = cspline(ts_sample, 1)
-dd_spline = cspline(ts_sample, 2)
-# ddd_spline = cspline(ts_sample, 3)
-sus_dd_spline = CubicSpline(ts_sample, qdds_sample, axis=0)
-ddd_spline = sus_dd_spline(ts_sample, 1)
+
+spline = qs_sample
+d_spline = np.diff(spline, axis=0) / np.diff(ts_sample)[:, None]
+dd_spline = np.diff(d_spline, axis=0) / np.diff(ts_sample[1:])[:, None]
+ddd_spline = np.diff(dd_spline, axis=0) / np.diff(ts_sample[2:])[:, None]
+# sus_dd_spline = CubicSpline(ts_sample, qdds_sample, axis=0)
+# ddd_spline = sus_dd_spline(ts_sample, 1)
 
 for i in range(path.dof):
     axs[0, 1].plot(ts_sample, spline[:, i], c="C{:d}".format(i))
-    axs[1, 1].plot(ts_sample, d_spline[:, i], c="C{:d}".format(i))
-    axs[2, 1].plot(ts_sample, dd_spline[:, i], c="C{:d}".format(i))
-    axs[3, 1].plot(ts_sample, ddd_spline[:, i], c="C{:d}".format(i))
+    axs[1, 1].plot(ts_sample[1:], d_spline[:, i], c="C{:d}".format(i))
+    axs[2, 1].plot(ts_sample[2:], dd_spline[:, i], c="C{:d}".format(i))
+    axs[3, 1].plot(ts_sample[3:], ddd_spline[:, i], c="C{:d}".format(i))
 
 axs[3, 0].set_xlabel("Time (s)")
 axs[3, 1].set_xlabel("Time (s)")

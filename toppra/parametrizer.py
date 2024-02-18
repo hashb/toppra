@@ -83,31 +83,41 @@ class ParametrizeConstAccel(AbstractGeometricPath):
         if isinstance(ts, (int, float)):
             ts = np.array([ts], dtype=float)
             scalar = True
-        ss, vs, us = self._eval_params(ts)
+        ss, vs, us, js = self._eval_params(ts)
+
         if order == 0:
+            # q(t) = q(s(t))
             out = self._path(ss)
         elif order == 1:
+            # q'(t) = q'(s(t)) * s'(t)
             out = np.multiply(self._path(ss, 1), vs[:, np.newaxis])
         elif order == 2:
+            # q''(t) = q''(s(t)) * s'(t)^2 + q'(s(t)) * s''(t)
             out = np.multiply(self._path(ss, 2), vs[:, np.newaxis] ** 2) + np.multiply(
                 self._path(ss, 1), us[:, np.newaxis]
             )
         elif order == 3:
+            # q'''(t) = q'(s(t)) * s'''(t) + 3 * q''(s(t)) * s'(t) * s''(t) + q'''(s(t)) * s'(t)^3
             # TODO: check if this is correct
-            out = np.multiply(
-                self._path(ss, 3), vs[:, np.newaxis] ** 3
-            ) + 3 * np.multiply(
-                self._path(ss, 2), vs[:, np.newaxis] ** 2 * us[:, np.newaxis]
+            out = (
+                np.multiply(self._path(ss, 1), js[:, np.newaxis])
+                + 3
+                * np.multiply(
+                    self._path(ss, 2), np.multiply(vs[:, np.newaxis], us[:, np.newaxis])
+                )
+                + np.multiply(self._path(ss, 3), vs[:, np.newaxis] ** 3)
             )
         else:
             raise ToppraError(f"Order {order} is not supported.")
         if scalar:
             return out[0]
+        logger.info(f"{ss.shape=}, {vs.shape=}, {us.shape=} {out.shape=}")
+
         return out
 
     def _eval_params(
         self, ts: np.ndarray
-    ) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Return the array of path positions, velocities and accels.
 
         Parameters
@@ -118,7 +128,7 @@ class ParametrizeConstAccel(AbstractGeometricPath):
         Returns
         ---------
         :
-            Positions, velocity and accelerations.
+            Positions, velocity, accelerations and jerks
         """
         assert self._us is not None
         assert self._ts is not None
@@ -126,23 +136,31 @@ class ParametrizeConstAccel(AbstractGeometricPath):
         ss = []
         vs = []
         us = []
+        js = [0]
         for idx, t in zip(indices, ts):
             if idx == len(self._us):
                 idx -= 1
             dt = t - self._ts[idx]
+            if idx > 1:
+                js.append(
+                    (us[idx - 1] - us[idx - 2])
+                    * vs[idx - 1]
+                    / (self._ss[idx - 1] - self._ss[idx - 2])
+                )
             us.append(self._us[idx])
             vs.append(self._velocities[idx] + dt * self._us[idx])
             ss.append(
                 self._ss[idx] + dt * self._velocities[idx] + 0.5 * dt**2 * self._us[idx]
             )
-        return np.array(ss), np.array(vs), np.array(us)
+        js.append(0)
+        return np.array(ss), np.array(vs), np.array(us), np.array(js)
 
     def plot_parametrization(self, show: bool = False, n_sample: int = 500) -> None:
         """Plot the output parametrization and show it."""
 
         # small decrement to make sure all indices are valid
         ts = np.linspace(self.path_interval[0], self.path_interval[1], n_sample)
-        ss, vs, _ = self._eval_params(ts)
+        ss, vs, _, _ = self._eval_params(ts)
         qs = self(ts, 0)
 
         plt.subplot(2, 2, 1)
