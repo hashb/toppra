@@ -5,6 +5,7 @@ toppra.algorithm.algorithm
 This module defines the abstract data types that define TOPP algorithms.
 
 """
+
 from typing import Dict, Any, List, Tuple, Optional
 import typing as T
 import abc
@@ -25,10 +26,12 @@ logger = logging.getLogger(__name__)
 
 
 class ParameterizationData(object):
-    """Internal data and output.
-    """
+    """Internal data and output."""
+
     def __init__(self, *arg, **kwargs) -> None:
-        self.return_code: ParameterizationReturnCode = ParameterizationReturnCode.ErrUnknown
+        self.return_code: ParameterizationReturnCode = (
+            ParameterizationReturnCode.ErrUnknown
+        )
         "ParameterizationReturnCode: Return code of the last parametrization attempt."
         self.gridpoints: Optional[np.ndarray] = None
         "np.ndarray: Shape (N+1, 1). Gridpoints"
@@ -40,15 +43,18 @@ class ParameterizationData(object):
         "np.ndarray: Shape (N+1, 2). Controllable sets."
         self.X: Optional[np.ndarray] = None
         "np.ndarray: Shape (N+1, 2). Feasible sets."
+        self.L: Optional[np.ndarray] = None
+        "np.ndarray: Shape (N+1, 2). Reachable sets."
 
     def __repr__(self):
         return "ParameterizationData(return_code:={}, N={:d})".format(
-            self.return_code, self.gridpoints.shape[0])
+            self.return_code, self.gridpoints.shape[0]
+        )
 
 
 class ParameterizationReturnCode(enum.Enum):
-    """Return codes from a parametrization attempt.
-    """
+    """Return codes from a parametrization attempt."""
+
     Ok = "Ok: Successful parametrization"
     ErrUnknown = "Error: Unknown issue"
     ErrShortPath = "Error: Input path is very short"
@@ -89,8 +95,15 @@ class ParameterizationAlgorithm(object):
 
     """
 
-    def __init__(self, constraint_list, path, gridpoints=None, parametrizer=None,
-                 gridpt_max_err_threshold: float=1e-3, gridpt_min_nb_points: int=100):
+    def __init__(
+        self,
+        constraint_list,
+        path,
+        gridpoints=None,
+        parametrizer=None,
+        gridpt_max_err_threshold: float = 1e-3,
+        gridpt_min_nb_points: int = 100,
+    ):
         self.constraints = constraint_list
         self.path = path  # Attr
         self._problem_data = ParameterizationData()
@@ -99,11 +112,11 @@ class ParameterizationAlgorithm(object):
             gridpoints = interpolator.propose_gridpoints(
                 path,
                 max_err_threshold=gridpt_max_err_threshold,
-                min_nb_points=gridpt_min_nb_points
+                min_nb_points=gridpt_min_nb_points,
             )
             logger.info(
                 "No gridpoint specified. Automatically choose a gridpoint with %d points",
-                len(gridpoints)
+                len(gridpoints),
             )
 
         if (
@@ -140,7 +153,9 @@ class ParameterizationAlgorithm(object):
         return self._problem_data
 
     @abc.abstractmethod
-    def compute_parameterization(self, sd_start: float, sd_end: float, return_data: bool=False):
+    def compute_parameterization(
+        self, sd_start: float, sd_end: float, return_data: bool = False
+    ):
         """Compute the path parameterization subject to starting and ending conditions.
 
         After this method terminates, the attribute
@@ -160,7 +175,9 @@ class ParameterizationAlgorithm(object):
         """
         raise NotImplementedError
 
-    def compute_trajectory(self, sd_start: float = 0, sd_end: float = 0) -> Optional[AbstractGeometricPath]:
+    def compute_trajectory(
+        self, sd_start: float = 0, sd_end: float = 0
+    ) -> Optional[AbstractGeometricPath]:
         """Compute the resulting joint trajectory and auxilliary trajectory.
 
         This is a convenient method if only the final output is wanted.
@@ -178,18 +195,26 @@ class ParameterizationAlgorithm(object):
         -------
         :
             Time-parameterized joint position trajectory or
-            None If unable to parameterize. 
+            None If unable to parameterize.
 
         """
         t0 = time.time()
         self.compute_parameterization(sd_start, sd_end)
         if self.problem_data.return_code != ParameterizationReturnCode.Ok:
-            logger.warning("Fail to parametrize path. Return code: %s", self.problem_data.return_code)
+            logger.warning(
+                "Fail to parametrize path. Return code: %s",
+                self.problem_data.return_code,
+            )
             return None
 
-        outputtraj = self.parametrizer(self.path, self.problem_data.gridpoints, self.problem_data.sd_vec)
-        logger.info("Successfully parametrize path. Duration: %.3f, previously %.3f)",
-                    outputtraj.path_interval[1], self.path.path_interval[1])
+        outputtraj = self.parametrizer(
+            self.path, self.problem_data.gridpoints, self.problem_data.sd_vec
+        )
+        logger.info(
+            "Successfully parametrize path. Duration: %.3f, previously %.3f)",
+            outputtraj.path_interval[1],
+            self.path.path_interval[1],
+        )
         logger.info("Finish parametrization in %.3f secs", time.time() - t0)
         return outputtraj
 
@@ -197,6 +222,7 @@ class ParameterizationAlgorithm(object):
         """Inspect the problem internal data."""
         K = self.problem_data.K
         X = self.problem_data.X
+        L = self.problem_data.L
         if X is not None:
             plt.plot(X[:, 0], c="green", label="Feasible sets")
             plt.plot(X[:, 1], c="green")
@@ -204,12 +230,13 @@ class ParameterizationAlgorithm(object):
             plt.plot(K[:, 0], "--", c="red", label="Controllable sets")
             plt.plot(K[:, 1], "--", c="red")
         if self.problem_data.sd_vec is not None:
-            plt.plot(self.problem_data.sd_vec ** 2, label="Velocity profile")
+            plt.plot(self.problem_data.sd_vec**2, label="Velocity profile")
+        if L is not None:
+            plt.plot(L[:, 0], "--", c="orange", label="Reachable sets")
+            plt.plot(L[:, 1], "--", c="orange")
         plt.title("Path-position path-velocity plot")
         plt.xlabel("Path position")
         plt.ylabel("Path velocity square")
         plt.legend()
         plt.tight_layout()
         plt.show()
-
-

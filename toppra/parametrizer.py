@@ -6,6 +6,7 @@ This module contains classes that produce the output trajectories,
 given the input path and the time parametrization.
 
 """
+
 import logging
 import typing as T
 import numpy as np
@@ -20,9 +21,9 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class ParametrizeConstAccel(AbstractGeometricPath):
-    """Compute output traj under constant acceleration assumption.
-    """
+    """Compute output traj under constant acceleration assumption."""
 
     def __init__(
         self,
@@ -33,7 +34,7 @@ class ParametrizeConstAccel(AbstractGeometricPath):
         self._path = path
         self._ss: np.ndarray = np.array(gridpoints)
         self._velocities: np.ndarray = np.array(velocities)
-        self._xs: np.ndarray = self._velocities ** 2
+        self._xs: np.ndarray = self._velocities**2
         self._ts: T.Optional[np.ndarray] = None
         self._us: T.Optional[np.ndarray] = None
 
@@ -88,15 +89,25 @@ class ParametrizeConstAccel(AbstractGeometricPath):
         elif order == 1:
             out = np.multiply(self._path(ss, 1), vs[:, np.newaxis])
         elif order == 2:
-            out = (np.multiply(self._path(ss, 2), vs[:, np.newaxis] ** 2) +
-                   np.multiply(self._path(ss, 1), us[:, np.newaxis]))
+            out = np.multiply(self._path(ss, 2), vs[:, np.newaxis] ** 2) + np.multiply(
+                self._path(ss, 1), us[:, np.newaxis]
+            )
+        elif order == 3:
+            # TODO: check if this is correct
+            out = np.multiply(
+                self._path(ss, 3), vs[:, np.newaxis] ** 3
+            ) + 3 * np.multiply(
+                self._path(ss, 2), vs[:, np.newaxis] ** 2 * us[:, np.newaxis]
+            )
         else:
             raise ToppraError(f"Order {order} is not supported.")
         if scalar:
             return out[0]
         return out
 
-    def _eval_params(self, ts: np.ndarray) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _eval_params(
+        self, ts: np.ndarray
+    ) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Return the array of path positions, velocities and accels.
 
         Parameters
@@ -122,9 +133,7 @@ class ParametrizeConstAccel(AbstractGeometricPath):
             us.append(self._us[idx])
             vs.append(self._velocities[idx] + dt * self._us[idx])
             ss.append(
-                self._ss[idx]
-                + dt * self._velocities[idx]
-                + 0.5 * dt ** 2 * self._us[idx]
+                self._ss[idx] + dt * self._velocities[idx] + 0.5 * dt**2 * self._us[idx]
             )
         return np.array(ss), np.array(vs), np.array(us)
 

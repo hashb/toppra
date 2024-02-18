@@ -47,10 +47,20 @@ class ReachabilityAlgorithm(ParameterizationAlgorithm):
     """
 
     def __init__(
-            self, constraint_list, path, gridpoints=None, solver_wrapper=None, parametrizer=None, **kwargs
+        self,
+        constraint_list,
+        path,
+        gridpoints=None,
+        solver_wrapper=None,
+        parametrizer=None,
+        **kwargs
     ):
         super(ReachabilityAlgorithm, self).__init__(
-            constraint_list, path, gridpoints=gridpoints, parametrizer=parametrizer, **kwargs
+            constraint_list,
+            path,
+            gridpoints=gridpoints,
+            parametrizer=parametrizer,
+            **kwargs
         )
 
         # Check for conic constraints
@@ -182,7 +192,7 @@ class ReachabilityAlgorithm(ParameterizationAlgorithm):
         """
         assert sdmin <= sdmax and 0 <= sdmin
         K = np.zeros((self._N + 1, 2))
-        K[self._N] = [sdmin ** 2, sdmax ** 2]
+        K[self._N] = [sdmin**2, sdmax**2]
         logger.debug("Start computing the controllable sets")
         self.solver_wrapper.setup_solver()
         for i in range(self._N - 1, -1, -1):
@@ -280,21 +290,31 @@ class ReachabilityAlgorithm(ParameterizationAlgorithm):
                 "An error occurred when computing controllable velocities. "
                 "The path is not controllable, or is badly conditioned."
             )
-            self._problem_data.return_code = ParameterizationReturnCode.FailUncontrollable
+            self._problem_data.return_code = (
+                ParameterizationReturnCode.FailUncontrollable
+            )
             if return_data:
                 return None, None, None, K
             else:
                 return None, None, None
         self._problem_data.K = K
 
-        x_start = sd_start ** 2
+        # compute reachable sets
+        L = self.compute_reachable_sets(sd_start, sd_start)
+        if np.isnan(K).any():
+            logger.warn("The set of controllable velocities at the beginning is empty!")
+        self.problem_data.L = L
+
+        x_start = sd_start**2
         if x_start + SMALL < K[0, 0] or K[0, 1] + SMALL < x_start:
             logger.warning(
                 "The initial velocity is not controllable. {:f} not in ({:f}, {:f})".format(
                     x_start, K[0, 0], K[0, 1]
                 )
             )
-            self._problem_data.return_code = ParameterizationReturnCode.FailUncontrollable
+            self._problem_data.return_code = (
+                ParameterizationReturnCode.FailUncontrollable
+            )
             if return_data:
                 return None, None, None, K
             else:
@@ -410,7 +430,7 @@ class ReachabilityAlgorithm(ParameterizationAlgorithm):
         assert sdmin <= sdmax and 0 <= sdmin
         feasible_sets = self.compute_feasible_sets()
         L = np.zeros((self._N + 1, 2))
-        L[0] = [sdmin ** 2, sdmax ** 2]
+        L[0] = [sdmin**2, sdmax**2]
         logger.debug("Start computing the reachable sets")
         self.solver_wrapper.setup_solver()
         for i in range(0, self._N):
