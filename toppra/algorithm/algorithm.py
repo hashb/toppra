@@ -234,6 +234,14 @@ class ParameterizationAlgorithm(object):
         if L is not None:
             plt.plot(L[:, 0], "--", c="orange", label="Reachable sets")
             plt.plot(L[:, 1], "--", c="orange")
+
+        res = np.zeros(self.problem_data.K.shape)
+        res[:, 0] = np.maximum(self.problem_data.K[:, 0], self.problem_data.L[:, 0])
+        res[:, 1] = np.minimum(self.problem_data.K[:, 1], self.problem_data.L[:, 1])
+
+        plt.plot(res[:, 0], "-.", c="pink", label="combination")
+        plt.plot(res[:, 1], "-.", c="pink")
+
         plt.title("Path-position path-velocity plot")
         plt.xlabel("Path position")
         plt.ylabel("Path velocity square")

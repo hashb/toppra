@@ -14,6 +14,7 @@ import toppra.algorithm as algo
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import ipdb
 
 ta.setup_logging("INFO")
 
@@ -121,11 +122,22 @@ jnt_traj = cast(ta.parametrizer.ParametrizeConstAccel, jnt_traj)
 
 # ################################################################################
 # # Optionally, we can inspect the output.
-# instance.compute_feasible_sets()
-# instance.inspect()
+instance.compute_feasible_sets()
+instance.inspect()
 
 
-plt.figure()
-plt.plot(K[:, 0])
-plt.plot(K[:, 1])
-plt.show()
+# plt.figure()
+# plt.plot(K[:, 0])
+# plt.plot(K[:, 1])
+# plt.show()
+
+problem_data = instance.problem_data
+
+assert problem_data.K is not None
+assert problem_data.L is not None
+
+res = np.zeros(problem_data.K.shape)
+res[:, 0] = np.maximum(problem_data.K[:, 0], problem_data.L[:, 0])
+res[:, 1] = np.minimum(problem_data.K[:, 1], problem_data.L[:, 1])
+
+# ipdb.set_trace()
