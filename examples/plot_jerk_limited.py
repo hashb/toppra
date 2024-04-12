@@ -56,7 +56,7 @@ gridpoints = ta.interpolator.propose_gridpoints(
     min_nb_points=500,
 )
 gridpoints = np.linspace(0, 1, 10000)
-instance = algo.TOPPRA(
+instance = algo.JerkLimitedTOPPRA(
     [pc_vel, pc_acc],
     path,
     gridpoints=gridpoints,

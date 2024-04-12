@@ -3,18 +3,18 @@ from .time_optimal_algorithm import TOPPRA
 import logging
 import numpy as np
 
-from dataclasses import dataclass
+from dataclasses import dataclass, Field
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass()
+@dataclass
 class Node:
     x: float
     s: float
 
     parent: "Node | None" = None
-    children: "list[Node]" = []
+    children: "list[Node] | None" = None
 
     j: float = 0
     u: float = 0
@@ -45,18 +45,28 @@ class JerkLimitedTOPPRA(TOPPRA):
     def _near_parents(self, x, v_open, r) -> list[Node]:
         return []
 
-    def compute_trajectory(
-        self, sd_start: float = 0, sd_end: float = 0
-    ) -> AbstractGeometricPath | None:
-        """"""
+    def compute_parameterization(self, sd_start, sd_end, return_data=False):
+        """_summary_
+
+        Args:
+            sd_start (_type_): _description_
+            sd_end (_type_): _description_
+            return_data (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            _type_: _description_
+        """
+
         # sample range must start with 0
         # use reachable sets instead of controllable set
 
         # we only need min, max of the x value.
         # for sampling we dont even use u, we just use x
 
-        # return super().compute_trajectory(sd_start, sd_end)
-        self.compute_parameterization(sd_start, sd_end)
+        super().compute_parameterization(sd_start, sd_end, return_data)
+
+        constraint_params = self.solver_wrapper.params
+        breakpoint()
 
         # check if path is reachable
 

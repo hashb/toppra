@@ -38,7 +38,12 @@ ParameterizationData
    :members:
 
 """
-from .algorithm import ParameterizationAlgorithm, ParameterizationData, ParameterizationReturnCode
-from .reachabilitybased import TOPPRA, TOPPRAsd
+
+from .algorithm import (
+    ParameterizationAlgorithm,
+    ParameterizationData,
+    ParameterizationReturnCode,
+)
+from .reachabilitybased import TOPPRA, TOPPRAsd, JerkLimitedTOPPRA
 
 __all__ = ["ParameterizationData", "ParameterizationAlgorithm", "TOPPRA", "TOPPRAsd"]
