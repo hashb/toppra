@@ -446,6 +446,11 @@ class SplineInterpolator(AbstractGeometricPath):
         raise ValueError(f"Invalid order {order}")
 
     @property
+    def times(self):
+        """Return the path positions."""
+        return self.ss_waypoints
+
+    @property
     def waypoints(self):
         """Tuple[np.ndarray, np.ndarray]: Return the waypoints.
 

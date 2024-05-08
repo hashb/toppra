@@ -221,7 +221,11 @@ class JerkLimitedTOPPRA(TOPPRA):
         # assert self.problem_data.K is not None
         # assert self.problem_data.L is not None
         # assert self.problem_data.gridpoints is not None
-        if self.problem_data.K is None or self.problem_data.L is None:
+        if (
+            self.problem_data.K is None
+            or self.problem_data.L is None
+            or self.problem_data.gridpoints is None
+        ):
             logger.error("Problem is not controllable")
             return None, None, None
 
