@@ -103,7 +103,7 @@ class JerkLimitedTOPPRA(TOPPRA):
         add uniform samples of len(xi) * NUM_UNIFORM_SAMPLES_X
         """
         if len(parent_nodes) == 0 or parent_nodes[0].parent is None:
-            return self._uniform_sample(idx, s, sd_min, sd_max, n_samples=20)
+            return self._uniform_sample(idx, s, sd_min, sd_max, n_samples=6)
 
         samples = []
         for parent in parent_nodes:
@@ -111,7 +111,7 @@ class JerkLimitedTOPPRA(TOPPRA):
             if new_x < sd_min or new_x > sd_max:
                 continue
             samples.append(Node(i=idx, x=new_x, s=s))
-        return samples + self._uniform_sample(idx, s, sd_min, sd_max, n_samples=20)
+        return samples + self._uniform_sample(idx, s, sd_min, sd_max, n_samples=6)
 
     def _near_parents(self, x: float, v_open: list[Node], r: int) -> list[Node]:
         """return all nodes in v_open that are within r distance from x"""
