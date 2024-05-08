@@ -25,6 +25,20 @@ class Node:
             return 0.5 * (self.x - self.parent.x) / (self.s - self.parent.s)
         return 0
 
+    @property
+    def s_jerk_prev(self):
+        if self.parent is not None and self.parent.parent is not None:
+            return (
+                (self.u_prev - self.parent.u_prev)
+                * np.sqrt(self.parent.x)
+                / (self.parent.s - self.parent.parent.s)
+            )
+        return 0
+
+
+def cost_fn(parent: Node, child: Node):
+    return 2 * (child.s - parent.s) / (child.x + parent.x)
+
 
 class JerkLimitedTOPPRA(TOPPRA):
 
