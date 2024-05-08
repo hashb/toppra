@@ -8,6 +8,7 @@ given the input path and the time parametrization.
 """
 
 import logging
+import time
 import typing as T
 import numpy as np
 from toppra.interpolator import AbstractGeometricPath, SplineInterpolator
@@ -227,3 +228,51 @@ class ParametrizeSpline(SplineInterpolator):
                 (1, path(path.path_interval[1], 1) * velocities[-1]),
             ),
         )
+
+        plot_trajectory(self)
+
+
+def plot_trajectory(jnt_traj: SplineInterpolator):
+    ts_sample = np.linspace(0, jnt_traj.duration, 100)
+    qs_sample = jnt_traj(ts_sample)
+    qds_sample = jnt_traj(ts_sample, 1)
+    qdds_sample = jnt_traj(ts_sample, 2)
+    qddds_sample = jnt_traj(ts_sample, 3)
+
+    dof = jnt_traj.dof
+    fig, axs = plt.subplots(4, 1, sharex=True)
+    for i in range(dof):
+        axs[0, 0].set_title("Jerk Limited Time Parameterization")
+        # plot the i-th joint trajectory
+        axs[0, 0].plot(ts_sample, qs_sample[:, i], c="C{:d}".format(i))
+        axs[1, 0].plot(ts_sample, qds_sample[:, i], c="C{:d}".format(i))
+        axs[2, 0].plot(ts_sample, qdds_sample[:, i], c="C{:d}".format(i))
+        axs[3, 0].plot(ts_sample, qddds_sample[:, i], c="C{:d}".format(i))
+
+    # differentiate the spline
+
+    # spline = qs_sample
+    # d_spline = np.diff(spline, axis=0) / np.diff(ts_sample)[:, None]
+    # dd_spline = np.diff(d_spline, axis=0) / np.diff(ts_sample[1:])[:, None]
+    # ddd_spline = np.diff(dd_spline, axis=0) / np.diff(ts_sample[2:])[:, None]
+
+    # for i in range(dof):
+    #     axs[0, 1].plot(ts_sample, spline[:, i], c="C{:d}".format(i))
+    #     axs[1, 1].plot(ts_sample[1:], d_spline[:, i], c="C{:d}".format(i))
+    #     axs[2, 1].plot(ts_sample[2:], dd_spline[:, i], c="C{:d}".format(i))
+    #     axs[3, 1].plot(ts_sample[3:], ddd_spline[:, i], c="C{:d}".format(i))
+
+    axs[3, 0].set_xlabel("Time (s)")
+    # axs[3, 1].set_xlabel("Time (s)")
+
+    axs[0, 0].set_ylabel("Position (rad)")
+    axs[1, 0].set_ylabel("Velocity (rad/s)")
+    axs[2, 0].set_ylabel("Acceleration (rad/s2)")
+    axs[3, 0].set_ylabel("Jerk (rad/s3)")
+
+    # axs[0, 1].set_ylabel("Position (rad)")
+    # axs[1, 1].set_ylabel("Velocity (rad/s)")
+    # axs[2, 1].set_ylabel("Acceleration (rad/s2)")
+    # axs[3, 1].set_ylabel("Jerk (rad/s3)")
+
+    plt.savefig(f"artifacts/jerk/{time.time()}.png")

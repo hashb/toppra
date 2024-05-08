@@ -75,7 +75,7 @@ jnt_traj = cast(ta.parametrizer.ParametrizeConstAccel, jnt_traj)
 
 # jnt_traj.plot_parametrization(show=True)
 
-ts_sample = np.linspace(0, jnt_traj.duration, 500)
+ts_sample = np.linspace(0, jnt_traj.duration, 100)
 qs_sample = jnt_traj(ts_sample)
 qds_sample = jnt_traj(ts_sample, 1)
 qdds_sample = jnt_traj(ts_sample, 2)
