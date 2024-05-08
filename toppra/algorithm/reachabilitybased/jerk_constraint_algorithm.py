@@ -13,6 +13,7 @@ rr.init("jerk_toppra", spawn=True)
 
 @dataclass
 class Node:
+    i: int
     x: float
     s: float
 
@@ -42,12 +43,13 @@ def cost_fn(parent: Node, child: Node):
 
 class JerkLimitedTOPPRA(TOPPRA):
 
-    def _uniform_sample(self, s, sd_min, sd_max, n_samples=6) -> list[Node]:
+    def _uniform_sample(self, idx, s, sd_min, sd_max, n_samples=6) -> list[Node]:
         x_samples = np.random.uniform(sd_min, sd_max, n_samples)
         children = []
         for sample in x_samples:
             children.append(
                 Node(
+                    i=idx,
                     x=sample,
                     s=s,
                 )
@@ -61,28 +63,72 @@ class JerkLimitedTOPPRA(TOPPRA):
         # breakpoint()
         return children
 
-    def _sample_x(self, s, sd_min, sd_max) -> list[Node]:
+    def _sample_x(self, idx, s, parent_nodes: list[Node], sd_min, sd_max) -> list[Node]:
         """for every x_{i-1} calculate xi using
         xi = x_{i-1} + 2 * delta_i * u_{i-2}
 
-        add uniform samples of len len(xi) * NUM_UNIFORM_SAMPLES_X
+        add uniform samples of len(xi) * NUM_UNIFORM_SAMPLES_X
         """
+        if len(parent_nodes) == 0 or parent_nodes[0].parent is None:
+            return self._uniform_sample(idx, s, sd_min, sd_max)
 
-        return self._uniform_sample(s, sd_min, sd_max)
+        samples = []
+        for parent in parent_nodes:
+            new_x = parent.x + 2 * (s - parent.s) * parent.u_prev
+            if new_x < sd_min or new_x > sd_max:
+                continue
+            samples.append(Node(i=idx, x=new_x, s=s))
+        return samples + self._uniform_sample(idx, s, sd_min, sd_max)
 
-    def _compute_cost(self, prev_node, new_node):
-        pass
+    def _near_parents(self, x: float, v_open: list[Node], r: int) -> list[Node]:
+        """return all nodes in v_open that are within r distance from x"""
+        # sort v_open by x
+        v_open.sort(key=lambda node: node.x)
+        return v_open[: min(len(v_open), r)]
 
-    def _near_parents(self, x, v_open, r) -> list[Node]:
-        return []
-
-    def _find_parent(self, v_near, x) -> Node:
+    def _find_parent(
+        self, curr_node: Node, q_dash, q_2dash, q_3dash, v_near_prev
+    ) -> Node | None:
         """
         calculate cost for every node in v_near
         sort the cost
         return the node with the lowest cost and satisfies the constraints
         """
-        pass
+        v_near_prev.sort(key=lambda node: cost_fn(node, curr_node))
+        for parent in v_near_prev:
+            if self._check_constraints(parent, curr_node, q_dash, q_2dash, q_3dash):
+                return parent
+        return None
+
+    def _check_constraints(self, parent: Node, child: Node, q_dash, q_2dash, q_3dash):
+        """check if the constraints are satisfied"""
+        s = child.s
+        x = child.x
+        u = 0.5 * (x - parent.x) / (s - parent.s)
+        s_jerk = (u - parent.u_prev) * np.sqrt(parent.x) / (s - parent.s)
+
+        # check standard constraints
+        for k, constraint in enumerate(self.constraints):
+            a, b, c, F, h, ubound, xbound = self.solver_wrapper.params[k]
+
+            if a is not None:
+                v = a[i] * u + b[i] * x + c[i]
+                if constraint.identical:
+                    cvxpy_constraints.append(F * v <= h)
+                else:
+                    cvxpy_constraints.append(F[i] * v <= h[i])
+
+            # ecos (via cvxpy in this class) is very bad at
+            # handling badly scaled problems. Problems with very
+            # large bound. The below max(), min() operators is a
+            # workaround to get pass this issue.
+            if ubound is not None:
+                cvxpy_constraints.append(max(-CVXPY_MAXU, ubound[i, 0]) <= u)
+                cvxpy_constraints.append(u <= min(CVXPY_MAXU, ubound[i, 1]))
+
+            if xbound is not None:
+                cvxpy_constraints.append(xbound[i, 0] <= x)
+                cvxpy_constraints.append(x <= min(CVXPY_MAXX, xbound[i, 1]))
 
     def compute_parameterization(self, sd_start, sd_end, return_data=False):
         """_summary_
@@ -136,8 +182,7 @@ class JerkLimitedTOPPRA(TOPPRA):
 
         graph: list[list[Node]] = [[]] * len(self.problem_data.gridpoints)
 
-        x_0 = Node(0, 0)
-        x_0.parent = Node(0, 0)
+        x_0 = Node(0, 0, 0)
         graph[0].append(x_0)
 
         v_open: list[list[Node]] = []
@@ -172,11 +217,10 @@ class JerkLimitedTOPPRA(TOPPRA):
             q_2dash = self.path(s, 2)
             q_3dash = self.path(s, 3)
 
-            v_unvisited = []
-            if idx == 1:
-                v_unvisited = self._uniform_sample(s, M[idx, 0], M[idx, 1])
-            else:
-                v_unvisited = self._sample_x(s, M[idx, 0], M[idx, 1])
+            # calculate V_unvisited for every parent node
+            # x_i = x_{i-1} + 2 * delta_i * u_{i-2}
+            parent_nodes = graph[idx - 1]
+            v_unvisited = self._sample_x(idx, s, parent_nodes, M[idx, 0], M[idx, 1])
 
             rr.set_time_seconds("stable_time", s)
             rr.log("M_max", rr.Scalar(M[idx, 1]))
@@ -193,13 +237,13 @@ class JerkLimitedTOPPRA(TOPPRA):
 
             time.sleep(0.001)
 
-            # epsilon = 10
-            # r = epsilon * (M[idx, 1] - M[idx, 0]) / len(v_unvisited)
-            # for x in v_unvisited:
-            #     # find parent nodes that are near x
-            #     v_near = self._near_parents(x, v_open[idx - 1])
-            #     # find the parent node that has the lowest cost
-            #     y = self._find_parent(v_near, x)
-            #     # add x to the graph
+            epsilon = 10
+            r = epsilon * (M[idx, 1] - M[idx, 0]) / len(v_unvisited)
+            for u_node in v_unvisited:
+                # find parent nodes that are near x
+                v_near_prev = self._near_parents(u_node.x, v_open[idx - 1], r)
+                # find the parent node that has the lowest cost
+                y = self._find_parent(u_node, q_dash, q_2dash, q_3dash, v_near_prev)
+                # add x to the graph
 
         breakpoint()
