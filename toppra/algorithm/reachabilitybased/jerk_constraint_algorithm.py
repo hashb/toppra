@@ -59,7 +59,7 @@ class JerkLimitedTOPPRA(TOPPRA):
         gridpoints=None,
         solver_wrapper="seidel",
         # solver_wrapper="cvxpy",
-        parametrizer=None,
+        parametrizer="ParametrizeSpline",
         **kwargs,
     ):
         super().__init__(
