@@ -1,4 +1,5 @@
 import time
+from toppra import constants
 from toppra.interpolator import AbstractGeometricPath
 from .time_optimal_algorithm import TOPPRA
 import logging
@@ -8,7 +9,7 @@ from dataclasses import dataclass, Field
 
 logger = logging.getLogger(__name__)
 
-rr.init("jerk_toppra", spawn=True)
+rr.init("jerk_toppra", spawn=False)
 
 
 @dataclass
@@ -16,6 +17,8 @@ class Node:
     i: int
     x: float
     s: float
+
+    cost: float = 0.0
 
     parent: "Node | None" = None
     children: "list[Node] | None" = None
@@ -36,12 +39,42 @@ class Node:
             )
         return 0
 
+    def __str__(self) -> str:
+        return f"Node(i={self.i}, x={self.x}, s={self.s}, u-1={self.u_prev}, cost={self.cost})\n"
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 def cost_fn(parent: Node, child: Node):
-    return 2 * (child.s - parent.s) / (child.x + parent.x)
+    return parent.cost + (2 * (child.s - parent.s) / (child.x + parent.x + 1e-8))
 
 
 class JerkLimitedTOPPRA(TOPPRA):
+
+    def __init__(
+        self,
+        constraint_list,
+        path,
+        gridpoints=None,
+        solver_wrapper="seidel",
+        # solver_wrapper="cvxpy",
+        parametrizer=None,
+        **kwargs,
+    ):
+        super().__init__(
+            constraint_list,
+            path,
+            gridpoints,
+            solver_wrapper,
+            parametrizer,
+            **kwargs,
+        )
+        self._jerk_limit = kwargs.get("jerk_limit", 200)
+        self.params = [
+            c.compute_constraint_params(self.path, self.gridpoints)
+            for c in self.constraints
+        ]
 
     def _uniform_sample(self, idx, s, sd_min, sd_max, n_samples=6) -> list[Node]:
         x_samples = np.random.uniform(sd_min, sd_max, n_samples)
@@ -70,7 +103,7 @@ class JerkLimitedTOPPRA(TOPPRA):
         add uniform samples of len(xi) * NUM_UNIFORM_SAMPLES_X
         """
         if len(parent_nodes) == 0 or parent_nodes[0].parent is None:
-            return self._uniform_sample(idx, s, sd_min, sd_max)
+            return self._uniform_sample(idx, s, sd_min, sd_max, n_samples=20)
 
         samples = []
         for parent in parent_nodes:
@@ -78,17 +111,15 @@ class JerkLimitedTOPPRA(TOPPRA):
             if new_x < sd_min or new_x > sd_max:
                 continue
             samples.append(Node(i=idx, x=new_x, s=s))
-        return samples + self._uniform_sample(idx, s, sd_min, sd_max)
+        return samples + self._uniform_sample(idx, s, sd_min, sd_max, n_samples=20)
 
     def _near_parents(self, x: float, v_open: list[Node], r: int) -> list[Node]:
         """return all nodes in v_open that are within r distance from x"""
         # sort v_open by x
-        v_open.sort(key=lambda node: node.x)
-        return v_open[: min(len(v_open), r)]
+        v_open.sort(key=lambda node: node.x - x)
+        return v_open  # [: min(len(v_open), r)]
 
-    def _find_parent(
-        self, curr_node: Node, q_dash, q_2dash, q_3dash, v_near_prev
-    ) -> Node | None:
+    def _find_parent(self, curr_node: Node, v_near_prev) -> Node | None:
         """
         calculate cost for every node in v_near
         sort the cost
@@ -96,39 +127,54 @@ class JerkLimitedTOPPRA(TOPPRA):
         """
         v_near_prev.sort(key=lambda node: cost_fn(node, curr_node))
         for parent in v_near_prev:
-            if self._check_constraints(parent, curr_node, q_dash, q_2dash, q_3dash):
+            if self._check_constraints(parent, curr_node):
                 return parent
         return None
 
-    def _check_constraints(self, parent: Node, child: Node, q_dash, q_2dash, q_3dash):
+    def _check_constraints(self, parent: Node, child: Node):
         """check if the constraints are satisfied"""
+        i = child.i  # I think we check the constraints for the parent node
         s = child.s
         x = child.x
         u = 0.5 * (x - parent.x) / (s - parent.s)
-        s_jerk = (u - parent.u_prev) * np.sqrt(parent.x) / (s - parent.s)
+        s_jerk = (u - parent.u_prev) * np.sqrt(parent.x) / (s - parent.s + 1e-8)
 
         # check standard constraints
         for k, constraint in enumerate(self.constraints):
-            a, b, c, F, h, ubound, xbound = self.solver_wrapper.params[k]
+            a, b, c, F, h, ubound, xbound = self.params[k]
 
             if a is not None:
                 v = a[i] * u + b[i] * x + c[i]
                 if constraint.identical:
-                    cvxpy_constraints.append(F * v <= h)
-                else:
-                    cvxpy_constraints.append(F[i] * v <= h[i])
+                    if not np.all(F.dot(v) <= h):
+                        return False
+                elif not np.all(F[i].dot(v) <= h[i]):
+                    return False
 
-            # ecos (via cvxpy in this class) is very bad at
-            # handling badly scaled problems. Problems with very
-            # large bound. The below max(), min() operators is a
-            # workaround to get pass this issue.
             if ubound is not None:
-                cvxpy_constraints.append(max(-CVXPY_MAXU, ubound[i, 0]) <= u)
-                cvxpy_constraints.append(u <= min(CVXPY_MAXU, ubound[i, 1]))
+                if not (max(-constants.MAXU, ubound[i, 0]) <= u):
+                    return False
+                if not (u <= min(constants.MAXU, ubound[i, 1])):
+                    return False
 
             if xbound is not None:
-                cvxpy_constraints.append(xbound[i, 0] <= x)
-                cvxpy_constraints.append(x <= min(CVXPY_MAXX, xbound[i, 1]))
+                if not (xbound[i, 0] <= x):
+                    return False
+                if not (x <= min(constants.MAXX, xbound[i, 1])):
+                    return False
+
+        # check jerk constraints
+        q_dash = self.path(parent.s, 1)
+        q_2dash = self.path(parent.s, 2)
+        q_3dash = self.path(parent.s, 3)
+        # print((q_dash * s_jerk) + (3 * q_2dash * u * x) + (q_3dash * x * np.sqrt(x)))
+        if not np.all(
+            (q_dash * s_jerk) + (3 * q_2dash * u * x) + (q_3dash * x * np.sqrt(x))
+            <= self._jerk_limit
+        ):
+            return False
+
+        return True
 
     def compute_parameterization(self, sd_start, sd_end, return_data=False):
         """_summary_
@@ -180,13 +226,15 @@ class JerkLimitedTOPPRA(TOPPRA):
         M[:, 0] = np.maximum(self.problem_data.K[:, 0], self.problem_data.L[:, 0])
         M[:, 1] = np.minimum(self.problem_data.K[:, 1], self.problem_data.L[:, 1])
 
-        graph: list[list[Node]] = [[]] * len(self.problem_data.gridpoints)
+        graph: list[list[Node]] = [[] for _ in range(len(self.problem_data.gridpoints))]
 
         x_0 = Node(0, 0, 0)
         graph[0].append(x_0)
 
-        v_open: list[list[Node]] = []
-        v_open.append([x_0])
+        v_open: list[list[Node]] = [
+            [] for _ in range(len(self.problem_data.gridpoints))
+        ]
+        v_open[0].append(x_0)
 
         # plot graph
         rr.set_time_seconds("stable_time", 0)
@@ -212,11 +260,6 @@ class JerkLimitedTOPPRA(TOPPRA):
             if idx == 0:
                 continue
 
-            q = self.path(s)
-            q_dash = self.path(s, 1)
-            q_2dash = self.path(s, 2)
-            q_3dash = self.path(s, 3)
-
             # calculate V_unvisited for every parent node
             # x_i = x_{i-1} + 2 * delta_i * u_{i-2}
             parent_nodes = graph[idx - 1]
@@ -238,12 +281,41 @@ class JerkLimitedTOPPRA(TOPPRA):
             time.sleep(0.001)
 
             epsilon = 10
-            r = epsilon * (M[idx, 1] - M[idx, 0]) / len(v_unvisited)
+            r = int(np.ceil(epsilon * (M[idx, 1] - M[idx, 0]) / len(v_unvisited)))
+            r = max(r, 15)
+            # print(f"{idx=}, {r=}\n\n")
             for u_node in v_unvisited:
                 # find parent nodes that are near x
                 v_near_prev = self._near_parents(u_node.x, v_open[idx - 1], r)
+                # print(v_near_prev)
                 # find the parent node that has the lowest cost
-                y = self._find_parent(u_node, q_dash, q_2dash, q_3dash, v_near_prev)
+                y = self._find_parent(u_node, v_near_prev)
                 # add x to the graph
+                if y is not None:
+                    v_open[idx].append(u_node)
 
-        breakpoint()
+                    u_node.parent = y
+                    u_node.cost = cost_fn(y, u_node)
+
+                    # print(u_node, y)
+
+                    graph[idx].append(u_node)
+
+            # print("\n\n")
+        # find the node with the lowest cost
+        min_cost_node = min(graph[-1], key=lambda node: node.cost)
+        path = [min_cost_node]
+        while path[-1].parent is not None:
+            path.append(path[-1].parent)
+
+        path.reverse()
+        print(path)
+        print(len(path))
+        sdd_vec = np.array([node.u_prev for node in path])
+        sd_vec = np.sqrt(np.array([node.x for node in path]))
+
+        self.problem_data.sdd_vec = sdd_vec
+        self.problem_data.sd_vec = sd_vec
+
+        return sdd_vec, sd_vec, None
+        # breakpoint()
