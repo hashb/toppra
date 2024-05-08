@@ -217,10 +217,13 @@ class JerkLimitedTOPPRA(TOPPRA):
         # delta_i = s_i+1 - s_i
 
         # s'''_i-1 = u_i-1 - u_i * sqrt(x_i-1) / delta_i-2
-        assert self.problem_data is not None
-        assert self.problem_data.K is not None
-        assert self.problem_data.L is not None
-        assert self.problem_data.gridpoints is not None
+        # assert self.problem_data is not None
+        # assert self.problem_data.K is not None
+        # assert self.problem_data.L is not None
+        # assert self.problem_data.gridpoints is not None
+        if self.problem_data.K is None or self.problem_data.L is None:
+            logger.error("Problem is not controllable")
+            return None, None, None
 
         M = np.zeros(self.problem_data.K.shape)
         M[:, 0] = np.maximum(self.problem_data.K[:, 0], self.problem_data.L[:, 0])

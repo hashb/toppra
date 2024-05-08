@@ -378,14 +378,14 @@ def plot_trajectory(jnt_traj: SplineInterpolator):
     qddds_sample = jnt_traj(ts_sample, 3)
 
     dof = jnt_traj.dof
-    fig, axs = plt.subplots(4, 1, sharex=True)
+    fig, axs = plt.subplots(4, 1, sharex=True, figsize=(8, 12))
     for i in range(dof):
-        axs[0, 0].set_title("Jerk Limited Time Parameterization")
+        axs[0].set_title("Jerk Limited Time Parameterization")
         # plot the i-th joint trajectory
-        axs[0, 0].plot(ts_sample, qs_sample[:, i], c="C{:d}".format(i))
-        axs[1, 0].plot(ts_sample, qds_sample[:, i], c="C{:d}".format(i))
-        axs[2, 0].plot(ts_sample, qdds_sample[:, i], c="C{:d}".format(i))
-        axs[3, 0].plot(ts_sample, qddds_sample[:, i], c="C{:d}".format(i))
+        axs[0].plot(ts_sample, qs_sample[:, i], c="C{:d}".format(i))
+        axs[1].plot(ts_sample, qds_sample[:, i], c="C{:d}".format(i))
+        axs[2].plot(ts_sample, qdds_sample[:, i], c="C{:d}".format(i))
+        axs[3].plot(ts_sample, qddds_sample[:, i], c="C{:d}".format(i))
 
     # differentiate the spline
 
@@ -400,13 +400,13 @@ def plot_trajectory(jnt_traj: SplineInterpolator):
     #     axs[2, 1].plot(ts_sample[2:], dd_spline[:, i], c="C{:d}".format(i))
     #     axs[3, 1].plot(ts_sample[3:], ddd_spline[:, i], c="C{:d}".format(i))
 
-    axs[3, 0].set_xlabel("Time (s)")
+    axs[3].set_xlabel("Time (s)")
     # axs[3, 1].set_xlabel("Time (s)")
 
-    axs[0, 0].set_ylabel("Position (rad)")
-    axs[1, 0].set_ylabel("Velocity (rad/s)")
-    axs[2, 0].set_ylabel("Acceleration (rad/s2)")
-    axs[3, 0].set_ylabel("Jerk (rad/s3)")
+    axs[0].set_ylabel("Position (rad)")
+    axs[1].set_ylabel("Velocity (rad/s)")
+    axs[2].set_ylabel("Acceleration (rad/s2)")
+    axs[3].set_ylabel("Jerk (rad/s3)")
 
     # axs[0, 1].set_ylabel("Position (rad)")
     # axs[1, 1].set_ylabel("Velocity (rad/s)")
