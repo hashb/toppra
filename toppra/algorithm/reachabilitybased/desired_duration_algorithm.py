@@ -8,8 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def _compute_duration(xs, deltas):
-    """ Compute the duration of the given parametrization.
-    """
+    """Compute the duration of the given parametrization."""
     sds = np.sqrt(xs)
     t = 0
     for i in range(len(deltas)):
@@ -34,12 +33,18 @@ class TOPPRAsd(ReachabilityAlgorithm):
 
         Parameters
         ----------
-        desired_duration: 
+        desired_duration:
           The desired duration.
         """
         self.desired_duration = desired_duration
 
-    def compute_parameterization(self, sd_start: float, sd_end: float, return_data: bool=False, atol: float=1e-5):
+    def compute_parameterization(
+        self,
+        sd_start: float,
+        sd_end: float,
+        return_data: bool = False,
+        atol: float = 1e-5,
+    ):
         """Compute a path parameterization.
 
         If there is no valid parameterizations, simply return None(s).
@@ -73,19 +78,31 @@ class TOPPRAsd(ReachabilityAlgorithm):
         K = self.compute_controllable_sets(sd_end, sd_end)
         if np.isnan(K).any():
             logger.warn("The set of controllable velocities at the beginning is empty!")
-            self._problem_data.return_code = algo.ParameterizationReturnCode.FailUncontrollable
+            self._problem_data.return_code = (
+                algo.ParameterizationReturnCode.FailUncontrollable
+            )
             if return_data:
                 return None, None, None, K
             else:
                 return None, None, None
         self.problem_data.K = K
 
-        x_start = sd_start ** 2
+        # compute reachable sets
+        L = self.compute_reachable_sets(sd_start, sd_start)
+        if np.isnan(K).any():
+            logger.warn("The set of controllable velocities at the beginning is empty!")
+        self.problem_data.L = L
+
+        x_start = sd_start**2
         if x_start + SMALL < K[0, 0] or K[0, 1] + SMALL < x_start:
-            logger.warn("The initial velocity is not controllable. {:f} not in ({:f}, {:f})".format(
-                x_start, K[0, 0], K[0, 1]
-            ))
-            self._problem_data.return_code = algo.ParameterizationReturnCode.FailUncontrollable
+            logger.warn(
+                "The initial velocity is not controllable. {:f} not in ({:f}, {:f})".format(
+                    x_start, K[0, 0], K[0, 1]
+                )
+            )
+            self._problem_data.return_code = (
+                algo.ParameterizationReturnCode.FailUncontrollable
+            )
             if return_data:
                 return None, None, None, K
             else:
@@ -102,8 +119,10 @@ class TOPPRAsd(ReachabilityAlgorithm):
         for i in range(self._N):
             optim_res = self._forward_step(i, xs[i], K[i + 1])
             if np.isnan(optim_res[0]):
-                logger.fatal("A numerical error occurs: The instance is controllable "
-                             "but forward pass fails.")
+                logger.fatal(
+                    "A numerical error occurs: The instance is controllable "
+                    "but forward pass fails."
+                )
                 us[i] = np.nan
                 xs[i + 1] = np.nan
                 v_vec[i] = np.nan
@@ -112,9 +131,15 @@ class TOPPRAsd(ReachabilityAlgorithm):
                 # The below function min( , max( ,)) ensure that the state x_{i+1} is controllable.
                 # While this is ensured theoretically by the existence of the controllable sets,
                 # numerical errors might violate this condition.
-                xs[i + 1] = min(K[i + 1, 1], max(K[i + 1, 0], xs[i] + 2 * deltas[i] * us[i] - SMALL))
+                xs[i + 1] = min(
+                    K[i + 1, 1], max(K[i + 1, 0], xs[i] + 2 * deltas[i] * us[i] - SMALL)
+                )
                 v_vec[i] = optim_res[2:]
-            logger.debug("[Forward pass] u_{:d} = {:f}, x_{:d} = {:f}".format(i, us[i], i + 1, xs[i + 1]))
+            logger.debug(
+                "[Forward pass] u_{:d} = {:f}, x_{:d} = {:f}".format(
+                    i, us[i], i + 1, xs[i + 1]
+                )
+            )
         self.solver_wrapper.close_solver()
         # compute the slowest parametrization
         xs_slow = np.zeros(N + 1)
@@ -126,8 +151,10 @@ class TOPPRAsd(ReachabilityAlgorithm):
         for i in range(self._N):
             optim_res = self._forward_step(i, xs_slow[i], K[i + 1], slow=True)
             if np.isnan(optim_res[0]):
-                logger.fatal("A numerical error occurs: The instance is controllable "
-                             "but forward pass fails.")
+                logger.fatal(
+                    "A numerical error occurs: The instance is controllable "
+                    "but forward pass fails."
+                )
                 us_slow[i] = np.nan
                 xs_slow[i + 1] = np.nan
                 v_vec_slow[i] = np.nan
@@ -136,26 +163,41 @@ class TOPPRAsd(ReachabilityAlgorithm):
                 # The below function min( , max( ,)) ensure that the state x_{i+1} is controllable.
                 # While this is ensured theoretically by the existence of the controllable sets,
                 # numerical errors might violate this condition.
-                xs_slow[i + 1] = min(K[i + 1, 1], max(K[i + 1, 0], xs_slow[i] + 2 * deltas[i] * us_slow[i] - SMALL))
+                xs_slow[i + 1] = min(
+                    K[i + 1, 1],
+                    max(K[i + 1, 0], xs_slow[i] + 2 * deltas[i] * us_slow[i] - SMALL),
+                )
                 v_vec_slow[i] = optim_res[2:]
-            logger.debug("[Forward pass] u_{:d} = {:f}, x_{:d} = {:f}".format(i, us_slow[i], i + 1, xs_slow[i + 1]))
+            logger.debug(
+                "[Forward pass] u_{:d} = {:f}, x_{:d} = {:f}".format(
+                    i, us_slow[i], i + 1, xs_slow[i + 1]
+                )
+            )
         self.solver_wrapper.close_solver()
 
         # desired parametrization xs_desired = alpha * xs + (1 - alpha) / xs_slow
         duration = _compute_duration(xs, deltas)
         duration_slow = _compute_duration(xs_slow, deltas)
         if duration > self.desired_duration:
-            logger.warn("Desired duration {:f} seconds is not achievable."
-                        " Returning the fastest parameterization with duration {:f} seconds"
-                        "".format(self.desired_duration, duration))
+            logger.warn(
+                "Desired duration {:f} seconds is not achievable."
+                " Returning the fastest parameterization with duration {:f} seconds"
+                "".format(self.desired_duration, duration)
+            )
             alpha = 1.0
         elif duration_slow < self.desired_duration:
-            logger.warn("Desired duration {:f} seconds is not achievable."
-                        " Returning the slowest parameterization with duration {:f} seconds"
-                        "".format(self.desired_duration, duration))
-            alpha = .0
+            logger.warn(
+                "Desired duration {:f} seconds is not achievable."
+                " Returning the slowest parameterization with duration {:f} seconds"
+                "".format(self.desired_duration, duration)
+            )
+            alpha = 0.0
         else:
-            logger.info("Desired duration {:f} sec is achievable. Continue computing.".format(self.desired_duration))
+            logger.info(
+                "Desired duration {:f} sec is achievable. Continue computing.".format(
+                    self.desired_duration
+                )
+            )
             alpha_low = 1.0  # here, low means a lower duration, and faster speed
             alpha_high = 0.0
             diff = 10
@@ -171,8 +213,11 @@ class TOPPRAsd(ReachabilityAlgorithm):
                 else:  # duration_alpha >= self.desired_duration
                     alpha_high = alpha
                     diff = duration_alpha - self.desired_duration
-                logger.debug("it: {:d}. search range: [{:}, {:}]".format(
-                    it, alpha_low, alpha_high))
+                logger.debug(
+                    "it: {:d}. search range: [{:}, {:}]".format(
+                        it, alpha_low, alpha_high
+                    )
+                )
         xs_alpha = alpha * xs + (1 - alpha) * xs_slow
         us_alpha = alpha * us + (1 - alpha) * us_slow
         v_vec_alpha = alpha * v_vec + (1 - alpha) * v_vec_slow
@@ -191,7 +236,7 @@ class TOPPRAsd(ReachabilityAlgorithm):
             return sdd_vec, sd_vec, v_vec_alpha
 
     def _forward_step(self, i, x, K_next, slow=False):
-        """ Compute the highest possible path velocity that is controllable.
+        """Compute the highest possible path velocity that is controllable.
 
         Parameters
         ----------
@@ -219,8 +264,8 @@ class TOPPRAsd(ReachabilityAlgorithm):
         nV = self.solver_wrapper.get_no_vars()
         g_upper = np.zeros(nV)
         if not slow:
-            g_upper[1] = - 1
-            g_upper[0] = - 2 * self.solver_wrapper.get_deltas()[i]
+            g_upper[1] = -1
+            g_upper[0] = -2 * self.solver_wrapper.get_deltas()[i]
         else:
             g_upper[1] = 1
             g_upper[0] = 2 * self.solver_wrapper.get_deltas()[i]
@@ -230,5 +275,6 @@ class TOPPRAsd(ReachabilityAlgorithm):
         K_next_min = K_next[0]
 
         optim_var = self.solver_wrapper.solve_stagewise_optim(
-            i, None, g_upper, x, x, K_next_min, K_next_max)
+            i, None, g_upper, x, x, K_next_min, K_next_max
+        )
         return optim_var

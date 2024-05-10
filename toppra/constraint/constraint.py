@@ -1,4 +1,5 @@
 """Base class for all path parametrization contraints. """
+
 from enum import Enum
 import logging
 import numpy as np
@@ -24,6 +25,7 @@ class DiscretizationType(Enum):
     In general, the difference in speed is not too large. Should use
     Interpolation if possible.
     """
+
     #: Smaller problem size, but lower accuracy.
     Collocation = 0
 
@@ -33,6 +35,12 @@ class DiscretizationType(Enum):
 
 class Constraint(object):
     """The base constraint class."""
+
+    def __init__(self):
+        self.constraint_type = ConstraintType.CanonicalLinear
+        self.discretization_type = DiscretizationType.Collocation
+        self.n_extra_vars = 0
+        self.identical = False
 
     def __repr__(self):
         string = self.__class__.__name__ + "(\n"

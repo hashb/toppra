@@ -32,6 +32,7 @@ simplepath.SimplePath
 
 
 """
+
 from typing import List, Union
 import typing as T
 import logging
@@ -47,8 +48,11 @@ if FOUND_OPENRAVE:
 
 
 def propose_gridpoints(
-        path, max_err_threshold=1e-4, max_iteration=100, max_seg_length=0.05,
-        min_nb_points=100
+    path,
+    max_err_threshold=1e-4,
+    max_iteration=100,
+    max_seg_length=0.05,
+    min_nb_points=100,
 ):
     r"""Generate gridpoints that sufficiently cover the given path.
 
@@ -99,7 +103,7 @@ def propose_gridpoints(
                 continue
 
             dist = gridpoints_ept[idx + 1] - gridpoints_ept[idx]
-            max_err = np.max(np.abs(0.5 * path(gp_mid, 2) * dist ** 2))
+            max_err = np.max(np.abs(0.5 * path(gp_mid, 2) * dist**2))
             if max_err > max_err_threshold:
                 add_new_points = True
                 gridpoints_ept.append(gp_mid)
@@ -131,7 +135,9 @@ class AbstractGeometricPath(object):
 
     """
 
-    def __call__(self, path_positions: Union[float, np.ndarray], order: int = 0) -> np.ndarray:
+    def __call__(
+        self, path_positions: Union[float, np.ndarray], order: int = 0
+    ) -> np.ndarray:
         """Evaluate the path at given positions.
 
         Parameters
@@ -144,6 +150,7 @@ class AbstractGeometricPath(object):
             - 0: position
             - 1: first-order derivative
             - 2: second-order derivative
+            - 3: third-order derivative
 
         Returns
         -------
@@ -190,6 +197,10 @@ class AbstractGeometricPath(object):
     def evaldd(self, ss_sam: Union[float, np.ndarray]):
         """Evaluate the path second-derivatives."""
         return self(ss_sam, 2)
+
+    def evalddd(self, ss_sam: Union[float, np.ndarray]):
+        """Evaluate the path third-derivatives."""
+        return self(ss_sam, 3)
 
 
 class RaveTrajectoryWrapper(AbstractGeometricPath):
@@ -342,7 +353,9 @@ class RaveTrajectoryWrapper(AbstractGeometricPath):
             return self.evald(ss_sam)
         if order == 2:
             return self.evaldd(ss_sam)
-        raise ValueError("Order must be 0, 1 or 2.")
+        if order == 3:
+            return self.evalddd(ss_sam)
+        raise ValueError("Order must be 0, 1, 2 or 3")
 
     def eval(self, ss_sam):
         """Evalute path postition."""
@@ -355,6 +368,10 @@ class RaveTrajectoryWrapper(AbstractGeometricPath):
     def evaldd(self, ss_sam):
         """Evalute path acceleration."""
         return self.ppoly.derivative(2)(ss_sam)
+
+    def evalddd(self, ss_sam):
+        """Evalute path acceleration."""
+        return self.ppoly.derivative(3)(ss_sam)
 
 
 class SplineInterpolator(AbstractGeometricPath):
@@ -382,12 +399,7 @@ class SplineInterpolator(AbstractGeometricPath):
 
     """
 
-    def __init__(
-        self, 
-        ss_waypoints, 
-        waypoints, 
-        bc_type: str="not-a-knot"
-    ) -> None:
+    def __init__(self, ss_waypoints, waypoints, bc_type: str = "not-a-knot") -> None:
         super(SplineInterpolator, self).__init__()
         self.ss_waypoints = np.array(ss_waypoints)  # type: np.ndarray
         self._q_waypoints = np.array(waypoints)  # type: np.ndarray
@@ -415,10 +427,12 @@ class SplineInterpolator(AbstractGeometricPath):
             self.cspl = _1dof_cspl
             self.cspld = _1dof_cspld
             self.cspldd = _1dof_cspld
+            self.cspldd = _1dof_cspld
         else:
             self.cspl = CubicSpline(ss_waypoints, waypoints, bc_type=bc_type)
             self.cspld = self.cspl.derivative()
             self.cspldd = self.cspld.derivative()
+            self.csplddd = self.cspldd.derivative()
 
     def __call__(self, path_positions, order=0):
         if order == 0:
@@ -427,7 +441,14 @@ class SplineInterpolator(AbstractGeometricPath):
             return self.cspld(path_positions)
         if order == 2:
             return self.cspldd(path_positions)
+        if order == 3:
+            return self.csplddd(path_positions)
         raise ValueError(f"Invalid order {order}")
+
+    @property
+    def times(self):
+        """Return the path positions."""
+        return self.ss_waypoints
 
     @property
     def waypoints(self):
@@ -497,7 +518,7 @@ class SplineInterpolator(AbstractGeometricPath):
             qs = self(self.ss_waypoints)
             qds = self(self.ss_waypoints, 1)
             qdds = self(self.ss_waypoints, 2)
-            for (q, qd, qdd, dt) in zip(qs, qds, qdds, deltas):
+            for q, qd, qdd, dt in zip(qs, qds, qdds, deltas):
                 traj.Insert(
                     traj.GetNumWaypoints(),
                     q.tolist() + qd.tolist() + qdd.tolist() + [dt],
@@ -506,7 +527,7 @@ class SplineInterpolator(AbstractGeometricPath):
 
 
 class UnivariateSplineInterpolator(AbstractGeometricPath):
-    """ Smooth given wayspoints by a cubic spline.
+    """Smooth given wayspoints by a cubic spline.
 
     This is a simple wrapper over `scipy.UnivariateSplineInterpolator`
     class.
@@ -536,6 +557,7 @@ class UnivariateSplineInterpolator(AbstractGeometricPath):
             )
         self.uspld = [spl.derivative() for spl in self.uspl]
         self.uspldd = [spl.derivative() for spl in self.uspld]
+        self.usplddd = [spl.derivative() for spl in self.uspldd]
 
     @property
     def dof(self):
@@ -556,6 +578,9 @@ class UnivariateSplineInterpolator(AbstractGeometricPath):
                 data.append(spl(ss_sam))
         elif order == 2:
             for spl in self.uspldd:
+                data.append(spl(ss_sam))
+        elif order == 3:
+            for spl in self.usplddd:
                 data.append(spl(ss_sam))
         return np.array(data).T
 
@@ -580,9 +605,16 @@ class UnivariateSplineInterpolator(AbstractGeometricPath):
             data.append(spl(ss_sam))
         return np.array(data).T
 
+    def evalddd(self, ss_sam):
+        """Return the path acceleration."""
+        data = []
+        for spl in self.usplddd:
+            data.append(spl(ss_sam))
+        return np.array(data).T
+
 
 class PolynomialPath(AbstractGeometricPath):
-    """ A class representing polynominal paths.
+    """A class representing polynominal paths.
 
     If coeff is a 1d array, the polynomial's equation is given by
 
@@ -626,6 +658,7 @@ class PolynomialPath(AbstractGeometricPath):
 
         self.polyd = [poly.deriv() for poly in self.poly]
         self.polydd = [poly.deriv() for poly in self.polyd]
+        self.polyddd = [poly.deriv() for poly in self.polydd]
 
     def __call__(self, path_positions, order=0):
         if order == 0:
@@ -634,6 +667,8 @@ class PolynomialPath(AbstractGeometricPath):
             return self.evald(path_positions)
         if order == 2:
             return self.evaldd(path_positions)
+        if order == 3:
+            return self.evalddd(path_positions)
         raise ValueError(f"Invalid order {order}")
 
     @property
@@ -681,6 +716,13 @@ class PolynomialPath(AbstractGeometricPath):
     def evaldd(self, ss_sam):
         """Return the path acceleration."""
         res = [poly(np.array(ss_sam)) for poly in self.polydd]
+        if self.dof == 1:
+            return np.array(res).flatten()
+        return np.array(res).T
+
+    def evalddd(self, ss_sam):
+        """Return the path acceleration."""
+        res = [poly(np.array(ss_sam)) for poly in self.polyddd]
         if self.dof == 1:
             return np.array(res).flatten()
         return np.array(res).T

@@ -14,6 +14,7 @@ import toppra.algorithm as algo
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import ipdb
 
 ta.setup_logging("INFO")
 
@@ -24,7 +25,7 @@ ta.setup_logging("INFO")
 def generate_new_problem(seed=9):
     # Parameters
     N_samples = 5
-    dof = 7
+    dof = 6
     np.random.seed(seed)
     way_pts = np.random.randn(N_samples, dof)
     return (
@@ -54,14 +55,16 @@ gridpoints = ta.interpolator.propose_gridpoints(
     max_iteration=500,
     min_nb_points=500,
 )
-gridpoints = np.linspace(0, 1, 10000)
-instance = algo.TOPPRA(
+gridpoints = np.linspace(0, 1, 10)
+instance = algo.JerkLimitedTOPPRA(
+    # instance = algo.TOPPRA(
     [pc_vel, pc_acc],
     path,
-    gridpoints=gridpoints,
+    # gridpoints=gridpoints,
     # parametrizer="ParametrizeConstAccel",
     parametrizer="ParametrizeSpline",
 )
+# sdd_vec, sd_vec, v_vec = instance.compute_parameterization(0, 0)
 jnt_traj = instance.compute_trajectory()
 assert jnt_traj is not None
 jnt_traj = cast(ta.parametrizer.ParametrizeConstAccel, jnt_traj)
@@ -85,7 +88,6 @@ for i in range(path.dof):
     axs[2, 0].plot(ts_sample, qdds_sample[:, i], c="C{:d}".format(i))
     axs[3, 0].plot(ts_sample, qddds_sample[:, i], c="C{:d}".format(i))
 
-from scipy.interpolate import CubicSpline
 
 # differentiate the spline
 
@@ -118,7 +120,24 @@ axs[3, 1].set_ylabel("Jerk (rad/s3)")
 plt.show()
 
 
-################################################################################
-# Optionally, we can inspect the output.
+# ################################################################################
+# # Optionally, we can inspect the output.
 instance.compute_feasible_sets()
 instance.inspect()
+
+
+# plt.figure()
+# plt.plot(K[:, 0])
+# plt.plot(K[:, 1])
+# plt.show()
+
+problem_data = instance.problem_data
+
+assert problem_data.K is not None
+assert problem_data.L is not None
+
+res = np.zeros(problem_data.K.shape)
+res[:, 0] = np.maximum(problem_data.K[:, 0], problem_data.L[:, 0])
+res[:, 1] = np.minimum(problem_data.K[:, 1], problem_data.L[:, 1])
+
+# ipdb.set_trace()
