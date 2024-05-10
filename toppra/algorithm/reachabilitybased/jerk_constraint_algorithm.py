@@ -3,7 +3,7 @@
 
 import time
 from toppra import constants
-from toppra.algorithm import TOPPRA
+from toppra.algorithm.reachabilitybased import TOPPRA
 import logging
 import numpy as np
 
