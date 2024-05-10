@@ -155,22 +155,21 @@ class JerkLimitedTOPPRA(TOPPRA):
                     return False
 
             if ubound is not None:
-                if not (max(-constants.MAXU, ubound[i, 0]) <= u):
+                if not (max(-constants.MAXU, ubound[i, 0] - 1e-6) <= u):
                     return False
-                if not (u <= min(constants.MAXU, ubound[i, 1])):
+                if not (u <= min(constants.MAXU, ubound[i, 1] + 1e-6)):
                     return False
 
             if xbound is not None:
-                if not (xbound[i, 0] <= x):
+                if not (xbound[i, 0] - 1e-6 <= x):
                     return False
-                if not (x <= min(constants.MAXX, xbound[i, 1])):
+                if not (x <= min(constants.MAXX, xbound[i, 1] + 1e-6)):
                     return False
 
         # check jerk constraints
         q_dash = self.path(parent.s, 1)
         q_2dash = self.path(parent.s, 2)
         q_3dash = self.path(parent.s, 3)
-        # print((q_dash * s_jerk) + (3 * q_2dash * u * x) + (q_3dash * x * np.sqrt(x)))
         if not np.all(
             (q_dash * s_jerk) + (3 * q_2dash * u * x) + (q_3dash * x * np.sqrt(x))
             <= self._jerk_limit
@@ -258,7 +257,6 @@ class JerkLimitedTOPPRA(TOPPRA):
             for u_node in v_unvisited:
                 # find parent nodes that are near x
                 v_near_prev = self._near_parents(u_node.x, v_open[idx - 1], r)
-                # print(v_near_prev)
                 # find the parent node that has the lowest cost
                 y = self._find_parent(u_node, v_near_prev)
                 # add x to the graph
@@ -268,11 +266,8 @@ class JerkLimitedTOPPRA(TOPPRA):
                     u_node.parent = y
                     u_node.cost = cost_fn(y, u_node)
 
-                    # print(u_node, y)
-
                     graph[idx].append(u_node)
 
-            # print("\n\n")
         # find the node with the lowest cost
         min_cost_node = min(graph[-1], key=lambda node: node.cost)
         path = [min_cost_node]
@@ -280,8 +275,7 @@ class JerkLimitedTOPPRA(TOPPRA):
             path.append(path[-1].parent)
 
         path.reverse()
-        print(path)
-        print(len(path))
+        print(f"{len(path)=}")
         sdd_vec = np.array([node.u_prev for node in path])
         sd_vec = np.sqrt(np.array([node.x for node in path]))
 

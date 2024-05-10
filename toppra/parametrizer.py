@@ -367,7 +367,7 @@ class ParametrizeSpline(SplineInterpolator):
             ),
         )
 
-        plot_trajectory(self)
+        # plot_trajectory(self)
 
 
 def plot_trajectory(jnt_traj: SplineInterpolator):
