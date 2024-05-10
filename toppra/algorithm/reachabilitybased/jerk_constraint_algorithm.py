@@ -118,9 +118,8 @@ class JerkLimitedTOPPRA(TOPPRA):
 
     def _near_parents(self, x: float, v_open: list[Node], r: int) -> list[Node]:
         """return all nodes in v_open that are within r distance from x"""
-        # sort v_open by x
-        v_open.sort(key=lambda node: node.x - x)
-        return v_open  # [: min(len(v_open), r)]
+        filtered = list(filter(lambda node: abs(node.x - x) <= r, v_open))
+        return filtered  # v_open
 
     def _find_parent(self, curr_node: Node, v_near_prev) -> Node | None:
         """
@@ -256,9 +255,7 @@ class JerkLimitedTOPPRA(TOPPRA):
             v_unvisited = self._sample_x(idx, s, parent_nodes, M[idx, 0], M[idx, 1])
 
             epsilon = 10
-            r = int(np.ceil(epsilon * (M[idx, 1] - M[idx, 0]) / len(v_unvisited)))
-            r = max(r, 15)
-            # print(f"{idx=}, {r=}\n\n")
+            r = max(epsilon * (M[idx, 1] - M[idx, 0]) / len(v_unvisited), 0.001)
             for u_node in v_unvisited:
                 # find parent nodes that are near x
                 v_near_prev = self._near_parents(u_node.x, v_open[idx - 1], r)
