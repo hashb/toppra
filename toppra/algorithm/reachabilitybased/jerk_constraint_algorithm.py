@@ -3,6 +3,7 @@
 
 import time
 from toppra import constants
+from toppra.algorithm.algorithm import ParameterizationReturnCode
 from toppra.algorithm.reachabilitybased import TOPPRA
 import logging
 import numpy as np
@@ -201,9 +202,6 @@ class JerkLimitedTOPPRA(TOPPRA):
         t2 = time.monotonic()
         print(f"Time taken for TOPPRA: {t2 - t1}")
 
-        constraint_params = self.solver_wrapper.params
-        # breakpoint()
-
         # check if path is reachable
 
         # samapling to find x and u that satisfy the constraints
@@ -224,7 +222,8 @@ class JerkLimitedTOPPRA(TOPPRA):
         # assert self.problem_data.L is not None
         # assert self.problem_data.gridpoints is not None
         if (
-            self.problem_data.K is None
+            self.problem_data.return_code != ParameterizationReturnCode.Ok
+            or self.problem_data.K is None
             or self.problem_data.L is None
             or self.problem_data.gridpoints is None
         ):
