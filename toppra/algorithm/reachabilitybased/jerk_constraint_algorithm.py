@@ -1,15 +1,18 @@
+"""Jerk Limited TOPPRA
+"""
+
 import time
 from toppra import constants
-from toppra.interpolator import AbstractGeometricPath
-from .time_optimal_algorithm import TOPPRA
+from toppra.algorithm import TOPPRA
 import logging
 import numpy as np
-import rerun as rr
-from dataclasses import dataclass, Field
+
+# import rerun as rr
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-rr.init("jerk_toppra", spawn=False)
+# rr.init("toppra_jerk_constraint", spawn=True, strict=True)
 
 
 @dataclass
@@ -243,26 +246,6 @@ class JerkLimitedTOPPRA(TOPPRA):
         ]
         v_open[0].append(x_0)
 
-        # plot graph
-        rr.set_time_seconds("stable_time", 0)
-        rr.log("K_max", rr.SeriesLine(color=[0, 165, 255], name="K_max"), timeless=True)
-        rr.log("K_min", rr.SeriesLine(color=[0, 255, 255], name="K_min"), timeless=True)
-
-        rr.log(
-            "L_max", rr.SeriesLine(color=[165, 165, 25], name="L_max"), timeless=True
-        )
-        rr.log(
-            "L_min", rr.SeriesLine(color=[165, 255, 25], name="L_min"), timeless=True
-        )
-
-        rr.log("M_max", rr.SeriesLine(color=[255, 165, 0], name="M_max"), timeless=True)
-        rr.log("M_min", rr.SeriesLine(color=[165, 255, 0], name="M_min"), timeless=True)
-        rr.log(
-            "x",
-            rr.SeriesPoint(color=[0, 0, 255], name="x", marker_size=1.5),
-            timeless=True,
-        )
-
         for idx, s in enumerate(self.problem_data.gridpoints):
             if idx == 0:
                 continue
@@ -271,21 +254,6 @@ class JerkLimitedTOPPRA(TOPPRA):
             # x_i = x_{i-1} + 2 * delta_i * u_{i-2}
             parent_nodes = graph[idx - 1]
             v_unvisited = self._sample_x(idx, s, parent_nodes, M[idx, 0], M[idx, 1])
-
-            rr.set_time_seconds("stable_time", s)
-            rr.log("M_max", rr.Scalar(M[idx, 1]))
-            rr.log("M_min", rr.Scalar(M[idx, 0]))
-
-            rr.log("K_max", rr.Scalar(self.problem_data.K[idx, 1]))
-            rr.log("K_min", rr.Scalar(self.problem_data.K[idx, 0]))
-
-            rr.log("L_max", rr.Scalar(self.problem_data.L[idx, 1]))
-            rr.log("L_min", rr.Scalar(self.problem_data.L[idx, 0]))
-
-            for x in v_unvisited:
-                rr.log("x", rr.Scalar(x.x))
-
-            time.sleep(0.001)
 
             epsilon = 10
             r = int(np.ceil(epsilon * (M[idx, 1] - M[idx, 0]) / len(v_unvisited)))
@@ -324,5 +292,66 @@ class JerkLimitedTOPPRA(TOPPRA):
         self.problem_data.sdd_vec = sdd_vec
         self.problem_data.sd_vec = sd_vec
 
-        return sdd_vec, sd_vec, None
+        # # rr.log("sampling_range", rr.ViewCoordinates.RIGHT_HAND_Y_UP, timeless=True)
+        # rr.set_time_sequence("step", 0)
+        # # plot to rerun
+        # viz_m_low = np.zeros((len(self.problem_data.gridpoints), 3))
+        # viz_m_high = np.zeros((len(self.problem_data.gridpoints), 3))
+        # viz_m_low[:, 0] = self.problem_data.gridpoints
+        # viz_m_low[:, 1] = M[:, 0]
+        # viz_m_high[:, 0] = self.problem_data.gridpoints
+        # viz_m_high[:, 1] = M[:, 1]
+
+        # viz_k_low = np.zeros((len(self.problem_data.gridpoints), 3))
+        # viz_k_high = np.zeros((len(self.problem_data.gridpoints), 3))
+        # viz_k_low[:, 0] = self.problem_data.gridpoints
+        # viz_k_low[:, 1] = self.problem_data.K[:, 0]
+        # viz_k_high[:, 0] = self.problem_data.gridpoints
+        # viz_k_high[:, 1] = self.problem_data.K[:, 1]
+
+        # viz_l_low = np.zeros((len(self.problem_data.gridpoints), 3))
+        # viz_l_high = np.zeros((len(self.problem_data.gridpoints), 3))
+        # viz_l_low[:, 0] = self.problem_data.gridpoints
+        # viz_l_low[:, 1] = self.problem_data.L[:, 0]
+        # viz_l_high[:, 0] = self.problem_data.gridpoints
+        # viz_l_high[:, 1] = self.problem_data.L[:, 1]
+
+        # combined_arr = np.stack(
+        #     [
+        #         viz_m_low,
+        #         viz_m_high,
+        #         viz_k_low,
+        #         viz_k_high,
+        #         viz_l_low,
+        #         viz_l_high,
+        #     ],
+        #     axis=0,
+        # )
+        # print(f"{combined_arr.shape=}")
+        # # breakpoint()
+
+        # rr.log(
+        #     "sampling_range",
+        #     rr.LineStrips3D(
+        #         combined_arr,
+        #         colors=[
+        #             [160, 160, 160],
+        #             [160, 160, 160],
+        #             [190, 100, 0],
+        #             [190, 100, 0],
+        #             [255, 165, 0],
+        #             [255, 165, 0],
+        #         ],
+        #         labels=[
+        #             "M low",
+        #             "M high",
+        #             "K low",
+        #             "K high",
+        #             "L low",
+        #             "L high",
+        #         ],
+        #     ),
+        # )
         # breakpoint()
+
+        return sdd_vec, sd_vec, None
