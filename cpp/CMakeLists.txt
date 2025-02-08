@@ -29,6 +29,17 @@ set(BUILD_WITH_PINOCCHIO_PYTHON false CACHE BOOL "Force compile with Pinocchio b
 # End of options
 
 
+set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX} )
+set(INSTALL_SHAREDLIB_DIR ${CMAKE_INSTALL_PREFIX}/sharedlib )
+set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin )
+set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/)
+
+include_directories("${PROJECT_SOURCE_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/src")
+include_directories("${PROJECT_SOURCE_DIR}/build")
+include_directories("/usr/local/include")
+link_directories("/usr/local/lib")
+
 set(PYBIND11_PYTHON_VERSION "${PYTHON_VERSION}")
 include(CMakePrintHelpers)
 
@@ -50,10 +61,36 @@ if(BUILD_WITH_GLPK)
     message(STATUS "Found glpk ${GLPK_LIBRARY} ${GLPK_INCLUDE_DIR}")
 endif(BUILD_WITH_GLPK)
 
+# clp
+find_library(libClp
+            NAMES libClp.so
+            HINTS /usr/lib /usr/lib/x86_64-linux-gnu
+            REQUIRED)
+
+find_library(libCoinUtils
+            libCoinUtils.so
+            HINTS /usr/lib /usr/lib/x86_64-linux-gnu
+            REQUIRED)
+
+##=============================================================================
+## Add Subdirectory
+##=============================================================================
+set(YAML_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/rossy_utils/thirdparty/yaml/include)
+set(GOLDFARB_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/rossy_utils/thirdparty)
+set(SDLP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/rossy_utils/thirdparty)
+set(CLP_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/rossy_utils/thirdparty)
+set(ROSSY_UTILS_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/rossy_utils)
+
+include_directories(${ROSSY_UTILS_INCLUDE_DIR})
+include_directories(${YAML_INCLUDE_DIR})
+include_directories(${GOLDFARB_INCLUDE_DIR})
+include_directories(${SDLP_INCLUDE_DIR})
+include_directories(${CLP_INCLUDE_DIR})
+
+add_subdirectory(rossy_utils)
 add_subdirectory(src)
 add_subdirectory(doc)
 add_subdirectory(bindings)
-add_subdirectory(rossy_utils)
 
 if(BUILD_TESTS)
 

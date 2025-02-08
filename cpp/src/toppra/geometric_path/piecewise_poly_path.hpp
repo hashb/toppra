@@ -104,7 +104,7 @@ class PiecewisePolyPath : public GeometricPath {
   CubicHermiteSpline(const Vectors &positions, const Vectors &velocities,
                      const std::vector<value_type> times);
 
-  TOPPRA_DEPRECATED static PiecewisePolyPath
+  static PiecewisePolyPath
   constructHermite(const Vectors &positions, const Vectors &velocities,
                    const std::vector<value_type> times);
 

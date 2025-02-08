@@ -1,4 +1,4 @@
-#include "controller/dhc/topt/trajectory_manager.hpp"
+#include "toppra/trajectory_manager.hpp"
 
 #include "rossy_utils/io/io_utilities.hpp"
 

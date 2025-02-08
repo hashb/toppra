@@ -1,8 +1,8 @@
-#include "controller/dhc/topt/topt_solver.hpp"
+#include "toppra/topt_solver.hpp"
 
 #include "clp/clpwrapper.hpp"
-#include "controller/dhc/topt/topt_utils.hpp"
-#include "controller/dhc/topt/trajectory_manager.hpp"
+#include "toppra/topt_utils.hpp"
+#include "toppra/trajectory_manager.hpp"
 #include "rossy_utils/general/clock.hpp"
 #include "rossy_utils/math/math_utilities.hpp"
 
@@ -305,11 +305,10 @@ double ToptSolver::getReachableXMax(int k, double xmax_c_k,
   return xmax_r_k;
 }
 
-bool ToptSolver::solve(const SYSTEM_DATA& sysdata, const GRIP_DATA& gripdata,
-                       TrajectoryManager* traj, bool thirdorder) {
+bool ToptSolver::solve(const SYSTEM_DATA& sysdata, TrajectoryManager* traj,
+                       bool thirdorder) {
   // set system variables
   sysdata_ = sysdata;
-  gripdata_ = gripdata;
 
   // 0. initialize sets containers
   initializeSets();
@@ -361,9 +360,7 @@ bool ToptSolver::solve(const SYSTEM_DATA& sysdata, const GRIP_DATA& gripdata,
   return true;
 }
 
-void ToptSolver::resolve(double planning_time, const GRIP_DATA& gripdata,
-                         TrajectoryManager* traj) {
-  gripdata_ = gripdata;
+void ToptSolver::resolve(double planning_time, TrajectoryManager* traj) {
   initializeDimensions();
 
   // 1. Find the next interval

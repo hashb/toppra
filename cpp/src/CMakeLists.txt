@@ -20,6 +20,9 @@ set(SOURCE_FILES
 
   toppra/algorithm.cpp
   toppra/algorithm/toppra.cpp
+
+  toppra/trajectory_manager.cpp
+  toppra/topt_solver.cpp
 )
 
 add_library(toppra ${SOURCE_FILES})
@@ -65,8 +68,11 @@ else (${EIGEN3_VERSION_STRING} VERSION_LESS 3.3)
   target_link_libraries(toppra PUBLIC Eigen3::Eigen) 
 endif (${EIGEN3_VERSION_STRING} VERSION_LESS 3.3) 
 
-install(TARGETS toppra EXPORT toppra::toppra
-  DESTINATION lib)
+target_link_libraries(toppra PUBLIC rossy_utils ${libCoinUtils} ${libClp} )
+
+install(TARGETS toppra
+        EXPORT toppra::toppra
+        DESTINATION lib)
 install(FILES
   toppra/algorithm.hpp
   toppra/constraint.hpp

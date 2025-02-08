@@ -1,7 +1,7 @@
 #ifndef TOPT_UTILS_H
 #define TOPT_UTILS_H
 
-#include "controller/dhc/user_command.hpp"
+#include "toppra/user_command.hpp"
 #include "rossy_utils/math/math_utilities.hpp"
 
 namespace topt_utils {

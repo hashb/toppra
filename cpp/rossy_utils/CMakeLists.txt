@@ -8,9 +8,12 @@ find_package(Eigen3)
 add_subdirectory(thirdparty/yaml)
 add_subdirectory(thirdparty/clp)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+
 FILE(GLOB_RECURSE sources "*.cpp")
-FILE(GLOB general_headers "General/*.hpp")
-FILE(GLOB io_headers "rossy_utils/IO/*.hpp")
+FILE(GLOB general_headers "general/*.hpp")
+FILE(GLOB io_headers "io/*.hpp")
 FILE(GLOB math_headers "math/*.hpp" "*.h")
 
 add_library(rossy_utils SHARED  ${sources} ${general_headers} ${io_headers} ${math_headers})
@@ -23,7 +26,18 @@ target_include_directories(rossy_utils PUBLIC
 message(status ${CMAKE_SOURCE_DIR})
 message(status ${PROJECT_SOURCE_DIR})
 
-install(TARGETS rossy_utils DESTINATION "${INSTALL_SHAREDLIB_DIR}")
+# Add export configuration
+install(TARGETS rossy_utils
+        EXPORT rossy_utils-targets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include)
+
+install(EXPORT rossy_utils-targets
+        FILE rossy_utils-targets.cmake
+        NAMESPACE rossy_utils::
+        DESTINATION lib/cmake/rossy_utils)
 
 
 # install(TARGETS rossy_utils DESTINATION "${INSTALL_LIB_DIR}")

@@ -1,4 +1,4 @@
-#include "controller/dhc/user_command.hpp"
+#include "toppra/user_command.hpp"
 #include "rossy_utils/math/lp_solver.hpp"
 
 class LPSolver;
@@ -62,7 +62,7 @@ class ToptSolver {
    * 3. If thirdorder=true, run TOPP3 to refine with jerk constraints
    * 4. Generate final time parameterization
    */
-  bool solve(const SYSTEM_DATA& sysdata, const GRIP_DATA& gripdata,
+  bool solve(const SYSTEM_DATA& sysdata,
              TrajectoryManager* traj, bool thirdorder = true);
 
   /**
@@ -74,7 +74,7 @@ class ToptSolver {
    * @param gripdata Updated gripper constraints
    * @param traj Trajectory manager to update
    */
-  void resolve(double planning_time, const GRIP_DATA& gripdata,
+  void resolve(double planning_time,
                TrajectoryManager* traj);
 
  private:
@@ -209,7 +209,6 @@ class ToptSolver {
   std::vector<double> trackable_xmax_;
 
   SYSTEM_DATA sysdata_;
-  GRIP_DATA gripdata_;
   LPSolver* lpsolver_;
   Clock* clock_;
 };
