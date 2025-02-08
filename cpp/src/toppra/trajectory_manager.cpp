@@ -204,6 +204,7 @@ int TrajectoryManager::evaluateTimeInterval(double t) {
   // from spline_t2q_, evaluate n-th inverval
   if (use_t2q_) return spline_t2q_.evaluateTimeInterval(t);
   if (use_t2s_) return spline_t2s_.evaluateTimeInterval(t);
+  return -1;
 }
 
 void TrajectoryManager::getCommand(double t, Eigen::VectorXd& q_cmd) {
