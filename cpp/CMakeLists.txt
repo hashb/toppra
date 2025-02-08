@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(toppra
   VERSION 0.6.2
@@ -53,6 +53,7 @@ endif(BUILD_WITH_GLPK)
 add_subdirectory(src)
 add_subdirectory(doc)
 add_subdirectory(bindings)
+add_subdirectory(rossy_utils)
 
 if(BUILD_TESTS)
 
