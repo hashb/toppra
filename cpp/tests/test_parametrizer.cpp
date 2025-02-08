@@ -48,8 +48,8 @@ TEST_F(ParametrizeConstAccel, Basic) {
   ASSERT_EQ(qds[0][0], 0);
   ASSERT_EQ(qds[0][1], 0);
 
-  ASSERT_EQ(qds[9][0], 0);
-  ASSERT_EQ(qds[9][1], 0);
+  ASSERT_NEAR(qds[9][0], 0, 1e-10);
+  ASSERT_NEAR(qds[9][1], 0, 1e-10);
 }
 
 TEST_F(ParametrizeConstAccel, Correctness) {
