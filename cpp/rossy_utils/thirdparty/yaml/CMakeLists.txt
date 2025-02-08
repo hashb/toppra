@@ -12,17 +12,20 @@ file(GLOB yaml_contrib_headers "include/contrib/*.h")
 file(GLOB yaml_node_headers "include/yaml/node/*.h")
 file(GLOB yaml_node_detail_headers "include/yaml/node/detail/*.h")
 
-add_library(yamlwrapper SHARED ${sources}
-                          ${yaml_headers}
-                          ${yaml_contrib_headers}
-                          ${yaml_node_headers}
-                          ${yaml_node_detail_headers})
+add_library(yamlwrapper STATIC ${sources})
 
 target_include_directories(yamlwrapper PUBLIC
-                          ${EIGEN3_INCLUDE_DIR}
-                          ${PROJECT_INCLUDE_DIR} )
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/yaml>)
 
-install(TARGETS yamlwrapper DESTINATION "${INSTALL_SHAREDLIB_DIR}")
+# Make sure position independent code is used
+set_target_properties(yamlwrapper PROPERTIES 
+    POSITION_INDEPENDENT_CODE ON)
+
+# Install yaml headers
+install(DIRECTORY include/
+        DESTINATION include/yaml
+        FILES_MATCHING PATTERN "*.h")
 
 # install(TARGETS yaml DESTINATION "${INSTALL_LIB_DIR}")
 # install(FILES ${yaml_headers} DESTINATION

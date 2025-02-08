@@ -19,14 +19,22 @@ FILE(GLOB math_headers "math/*.hpp" "*.h")
 add_library(rossy_utils SHARED  ${sources} ${general_headers} ${io_headers} ${math_headers})
 target_link_libraries(rossy_utils yamlwrapper clpwrapper ${EIGEN_LIBRARIES} ${libCoinUtils} ${libClp})
 target_include_directories(rossy_utils PUBLIC   
-                      ${PROJECT_SOURCE_DIR}
-                      ${EIGEN3_INCLUDE_DIR} 
-                      ${THIRDPARTY_INCLUDE_DIR} )
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${THIRDPARTY_INCLUDE_DIR}>
+    $<INSTALL_INTERFACE:include>
+    ${EIGEN3_INCLUDE_DIR})
 
 message(status ${CMAKE_SOURCE_DIR})
 message(status ${PROJECT_SOURCE_DIR})
 
-# Add export configuration
+# First install the dependencies
+install(TARGETS yamlwrapper clpwrapper
+        EXPORT rossy_utils-targets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin)
+
+# Then install rossy_utils
 install(TARGETS rossy_utils
         EXPORT rossy_utils-targets
         LIBRARY DESTINATION lib
@@ -39,8 +47,10 @@ install(EXPORT rossy_utils-targets
         NAMESPACE rossy_utils::
         DESTINATION lib/cmake/rossy_utils)
 
-
-# install(TARGETS rossy_utils DESTINATION "${INSTALL_LIB_DIR}")
-# install(FILES ${general_headers} DESTINATION "${INSTALL_INCLUDE_DIR}/utils/General")
-# install(FILES ${io_headers} DESTINATION "${INSTALL_INCLUDE_DIR}/Utils/IO")
-# install(FILES ${math_headers} DESTINATION "${INSTALL_INCLUDE_DIR}/Utils/Math")
+# Install header files
+install(FILES ${general_headers} 
+        DESTINATION include/utils/general)
+install(FILES ${io_headers} 
+        DESTINATION include/utils/io)
+install(FILES ${math_headers} 
+        DESTINATION include/utils/math)
