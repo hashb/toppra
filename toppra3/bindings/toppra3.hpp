@@ -76,24 +76,26 @@ class Toppra3Parameterization {
    */
   bool solve(const std::vector<Eigen::VectorXd>& waypoints, const RobotLimits& limits,
              bool use_jerk_limits = true) {
-    std::cout << "Toppra3Parameterization::solve 0" << std::endl;
+    std::cout << "Toppra3Parameterization::solve SETUP 0" << std::endl;
     std::shared_ptr<TrajectoryManager> traj_manager_ =
         std::make_shared<TrajectoryManager>();
-    std::cout << "Toppra3Parameterization::solve 1" << std::endl;
+    std::cout << "Toppra3Parameterization::solve SETUP 1" << std::endl;
     std::shared_ptr<ToptSolver> solver_ = std::make_shared<ToptSolver>(num_joints_);
-    std::cout << "Toppra3Parameterization::solve 2" << std::endl;
+    std::cout << "Toppra3Parameterization::solve SETUP 2" << std::endl;
 
     // Convert waypoints to normalized path
     std::vector<Eigen::VectorXd> normalized_waypoints;
-    std::cout << "Toppra3Parameterization::solve 3" << std::endl;
+    std::cout << "Toppra3Parameterization::solve PREPROCESSING 3" << std::endl;
     traj_manager_->redistQwptsPureNormDist(waypoints, normalized_waypoints);
-    std::cout << "Toppra3Parameterization::solve 4" << std::endl;
+    std::cout << "Toppra3Parameterization::solve PREPROCESSING 4" << std::endl;
+
     // Convert limits to system data format
     SYSTEM_DATA sysdata = limits.toSystemData(traj_manager_);
-    std::cout << "Toppra3Parameterization::solve 5" << std::endl;
+    std::cout << "Toppra3Parameterization::solve SOLVE 5" << std::endl;
+
     // Solve time-optimal parameterization
     bool success = solver_->solve(sysdata, traj_manager_.get(), use_jerk_limits);
-    std::cout << "Toppra3Parameterization::solve 6" << std::endl;
+    std::cout << "Toppra3Parameterization::solve POSTPROCESSING 6" << std::endl;
     return success;
   }
 
