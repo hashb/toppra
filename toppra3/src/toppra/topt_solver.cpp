@@ -463,15 +463,6 @@ void ToptSolver::solveTOPP3(const std::vector<double>& x0_list, int i_c) {
 
   t_diff = fabs(topt - t);
   topt = t;
-
-  TOPT_DEBUG_MSG("xprev_list = ");
-  if (TOPT_DEBUG_PRINT) {
-    for (int i = 0; i < xprev_list.size(); i++) {
-      std::cout << xprev_list[i] << " ";
-    }
-    std::cout << std::endl;
-  }
-
   xopt_list = xprev_list;
   alpha = 1.0;
   TOPT_DEBUG_MSG("x_diff = " << x_diff << ", t=" << t << ", topt=" << topt 
