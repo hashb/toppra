@@ -47,10 +47,6 @@ public:
             sysdata.am[i] = max_joint_acceleration;
             sysdata.jm[i] = max_joint_jerk;
             sysdata.tm[i] = max_joint_torque;
-            
-            // Linear velocity/acceleration limits
-            sysdata.lvm[i] = max_linear_velocity;
-            sysdata.lam[i] = max_linear_acceleration;
         }
 
         return sysdata;

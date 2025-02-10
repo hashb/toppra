@@ -13,8 +13,8 @@ include_directories(
 
 FILE(GLOB headers "*.hh" "*.h" "*.hpp")
 FILE(GLOB_RECURSE sources *.cc)
-add_library (myGoldfarb SHARED ${headers} ${sources})
+add_library (myGoldfarb ${headers} ${sources})
 
-install(TARGETS myGoldfarb DESTINATION "${INSTALL_SHAREDLIB_DIR}")
+install(TARGETS myGoldfarb DESTINATION Goldfarb)
 # install(FILES ${headers} DESTINATION
 #     "${INSTALL_INCLUDE_DIR}/thirdparty/Goldfarb")

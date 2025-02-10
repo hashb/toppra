@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(toppra3, m) {
+PYBIND11_MODULE(_toppra3, m) {
     m.doc() = "Python bindings for TOPPRA3 trajectory parameterization library";
 
     py::class_<RobotLimits>(m, "RobotLimits")
@@ -34,4 +34,4 @@ PYBIND11_MODULE(toppra3, m) {
             return py::make_tuple(position, velocity, acceleration);
         }, "Get trajectory state (position, velocity, acceleration) at given time")
         .def("get_duration", &Toppra3Parameterization::getDuration);
-} 
+}

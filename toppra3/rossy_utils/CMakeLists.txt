@@ -16,7 +16,7 @@ FILE(GLOB general_headers "general/*.hpp")
 FILE(GLOB io_headers "io/*.hpp")
 FILE(GLOB math_headers "math/*.hpp" "*.h")
 
-add_library(rossy_utils SHARED  ${sources} ${general_headers} ${io_headers} ${math_headers})
+add_library(rossy_utils  ${sources} ${general_headers} ${io_headers} ${math_headers})
 target_link_libraries(rossy_utils yamlwrapper clpwrapper ${EIGEN_LIBRARIES} ${libCoinUtils} ${libClp})
 target_include_directories(rossy_utils PUBLIC   
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>

@@ -11,7 +11,7 @@ name = "toppra3"
 version = "0.1.0"
 description = "TOPPRA trajectory optimization library"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+    {name = "Chenna Kautilya", email = "chenna@outlook.com"},
 ]
 requires-python = ">=3.7"
 
@@ -53,7 +53,3 @@ before-all = [
 
 [tool.cibuildwheel.macos]
 before-all = "brew install eigen"
-
-[tool.cibuildwheel.windows]
-before-all = "vcpkg install eigen3:x64-windows"
-environment = { CMAKE_ARGS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" } 

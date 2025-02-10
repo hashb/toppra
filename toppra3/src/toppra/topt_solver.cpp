@@ -43,39 +43,12 @@ void ToptSolver::get2ndlimit(int k, InequalData& constraints) {
   constraints.A = Eigen::MatrixXd::Zero(8 * dim_, 2);
   constraints.b = Eigen::VectorXd::Zero(8 * dim_);
 
-  // torque limit
-  // 1) - tm[k] - g[k] <
-  //   m[k]/2ds[k]*x[k+1] + (b[k]-m[k]/2ds[k])*x[k]
-  //                                 < tm[k] - g[k]
-  Eigen::VectorXd ak1 =
-      sysdata_.m[k] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
-  Eigen::VectorXd ak0 = sysdata_.b[k] - ak1;
-  constraints.A.block(0, 0, dim_, 1) = ak0;
-  constraints.A.block(0, 1, dim_, 1) = ak1;
-  constraints.b.segment(0, dim_) = sysdata_.tm[k] - sysdata_.g[k];
-  constraints.A.block(dim_, 0, dim_, 1) = -ak0;
-  constraints.A.block(dim_, 1, dim_, 1) = -ak1;
-  constraints.b.segment(dim_, dim_) = sysdata_.tm[k] + sysdata_.g[k];
-  // 2) - tm[k+1] - g[k+1] <
-  //   (b[k+1]+m[k+1]/2ds[k])*x[k+1] -m[k+1]/2ds[k]*x[k]
-  //                                 < tm[k+1] - g[k+1]
-  ak0 = -sysdata_.m[k + 1] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
-  ak1 = sysdata_.b[k + 1] - ak0;
-  constraints.A.block(2 * dim_, 0, dim_, 1) = ak0;
-  constraints.A.block(2 * dim_, 1, dim_, 1) = ak1;
-  constraints.b.segment(2 * dim_, dim_) =
-      sysdata_.tm[k + 1] - sysdata_.g[k + 1];
-  constraints.A.block(3 * dim_, 0, dim_, 1) = -ak0;
-  constraints.A.block(3 * dim_, 1, dim_, 1) = -ak1;
-  constraints.b.segment(3 * dim_, dim_) =
-      sysdata_.tm[k + 1] + sysdata_.g[k + 1];
-
   // acceleration limit
   // 1) -am[k] <
   //  dq[k]/2ds[k] x[k+1] + (ddq[k]-dq[k]/2ds) x[k]
   //                                        < am[k]
-  ak1 = sysdata_.dq[k] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
-  ak0 = sysdata_.ddq[k] - ak1;
+  Eigen::VectorXd ak1 = sysdata_.dq[k] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
+  Eigen::VectorXd ak0 = sysdata_.ddq[k] - ak1;
   constraints.A.block(4 * dim_, 0, dim_, 1) = ak0;
   constraints.A.block(4 * dim_, 1, dim_, 1) = ak1;
   constraints.b.segment(4 * dim_, dim_) = sysdata_.am[k];
