@@ -87,6 +87,7 @@ class Toppra3Parameterization {
     std::vector<Eigen::VectorXd> normalized_waypoints;
     std::cout << "Toppra3Parameterization::solve PREPROCESSING 3" << std::endl;
     traj_manager_->redistQwptsPureNormDist(waypoints, normalized_waypoints);
+    traj_manager_->setS2QSpline(normalized_waypoints);
     std::cout << "Toppra3Parameterization::solve PREPROCESSING 4" << std::endl;
 
     // Convert limits to system data format

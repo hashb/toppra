@@ -74,10 +74,6 @@ void TOPPHermiteSplines::check() {
   rossy_utils::pretty_print(ts, "\nts");
   rossy_utils::pretty_print(ps, "\nps");
   rossy_utils::pretty_print(vs, "\nvs");
-
-  rossy_utils::saveVector(ts, "dhc_data/ts");
-  rossy_utils::saveVector(ps, "dhc_data/ps");
-  rossy_utils::saveVector(vs, "dhc_data/vs");
 }
 
 double TOPPHermiteSplines::getPeroid() {

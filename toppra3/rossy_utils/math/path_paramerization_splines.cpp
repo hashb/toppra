@@ -126,11 +126,6 @@ void TOPPSplines::check() {
   rossy_utils::pretty_print(ss, "\nss");
   rossy_utils::pretty_print(vs, "\nvs");
   rossy_utils::pretty_print(us, "\nus");
-
-  rossy_utils::saveVector(ts, "dhc_data/ts");
-  rossy_utils::saveVector(ss, "dhc_data/ss");
-  rossy_utils::saveVector(vs, "dhc_data/vs");
-  rossy_utils::saveVector(us, "dhc_data/us");
 }
 
 double TOPPSplines::getPeroid() {
