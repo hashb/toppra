@@ -1,0 +1,42 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "cmake>=3.15",
+    "scikit-build>=0.13",
+    "ninja",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+# Disable building PyPy wheels on all platforms
+skip = "pp*"
+
+# Configure environment variables
+environment = { CMAKE_ARGS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON" }
+
+[tool.cibuildwheel.linux]
+before-all = [
+    "yum install -y eigen3-devel",  # For CentOS/RHEL
+    # Alternatively for Ubuntu/Debian:
+    # "apt-get update && apt-get install -y libeigen3-dev"
+]
+
+[tool.cibuildwheel.macos]
+before-all = "brew install eigen"
+
+[tool.cibuildwheel.windows]
+before-all = "vcpkg install eigen3:x64-windows"
+environment = { CMAKE_ARGS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "numpy>=1.20",
+] 
