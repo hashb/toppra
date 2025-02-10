@@ -52,16 +52,5 @@ PYBIND11_MODULE(_toppra3, m) {
         .def("solve", &toppra3::Toppra3Parameterization::solve,
              py::arg("waypoints"),
              py::arg("limits"),
-             py::arg("use_jerk_limits") = true)
-        .def("get_state", [](toppra3::Toppra3Parameterization& self, double time) {
-            Eigen::VectorXd position, velocity, acceleration;
-            position.resize(self.getNumJoints());
-            velocity.resize(self.getNumJoints());
-            acceleration.resize(self.getNumJoints());
-            
-            self.getState(time, position, velocity, acceleration);
-            
-            return py::make_tuple(position, velocity, acceleration);
-        }, "Get trajectory state (position, velocity, acceleration) at given time")
-        .def("get_duration", &toppra3::Toppra3Parameterization::getDuration);
+             py::arg("use_jerk_limits") = true);
 }

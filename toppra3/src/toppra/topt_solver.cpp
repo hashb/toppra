@@ -40,8 +40,8 @@ void ToptSolver::get1stlimit(int k, InequalData& constraints) {
 void ToptSolver::get2ndlimit(int k, InequalData& constraints) {
   // A*[ x[k]; x[k+1] ] < b
   // dimIneq2_ = 4*dim_(trq) + 4*dim_(acc)
-  constraints.A = Eigen::MatrixXd::Zero(8 * dim_, 2);
-  constraints.b = Eigen::VectorXd::Zero(8 * dim_);
+  constraints.A = Eigen::MatrixXd::Zero(4 * dim_, 2);
+  constraints.b = Eigen::VectorXd::Zero(4 * dim_);
 
   // acceleration limit
   // 1) -am[k] <
@@ -49,23 +49,23 @@ void ToptSolver::get2ndlimit(int k, InequalData& constraints) {
   //                                        < am[k]
   Eigen::VectorXd ak1 = sysdata_.dq[k] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
   Eigen::VectorXd ak0 = sysdata_.ddq[k] - ak1;
-  constraints.A.block(4 * dim_, 0, dim_, 1) = ak0;
-  constraints.A.block(4 * dim_, 1, dim_, 1) = ak1;
-  constraints.b.segment(4 * dim_, dim_) = sysdata_.am[k];
-  constraints.A.block(5 * dim_, 0, dim_, 1) = -ak0;
-  constraints.A.block(5 * dim_, 1, dim_, 1) = -ak1;
-  constraints.b.segment(5 * dim_, dim_) = sysdata_.am[k];
+  constraints.A.block(0 * dim_, 0, dim_, 1) = ak0;
+  constraints.A.block(0 * dim_, 1, dim_, 1) = ak1;
+  constraints.b.segment(0 * dim_, dim_) = sysdata_.am[k];
+  constraints.A.block(1 * dim_, 0, dim_, 1) = -ak0;
+  constraints.A.block(1 * dim_, 1, dim_, 1) = -ak1;
+  constraints.b.segment(1 * dim_, dim_) = sysdata_.am[k];
   // 2) -am[k+1] <
   // ( ddq[k+1] + dq[k+1]/2ds[k] ) x[k+1] - (dq[k+1]/2ds) x[k]
   //                                        < am[k+1]
   ak0 = -sysdata_.dq[k + 1] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
   ak1 = sysdata_.ddq[k + 1] - ak0;
-  constraints.A.block(6 * dim_, 0, dim_, 1) = ak0;
-  constraints.A.block(6 * dim_, 1, dim_, 1) = ak1;
-  constraints.b.segment(6 * dim_, dim_) = sysdata_.am[k + 1];
-  constraints.A.block(7 * dim_, 0, dim_, 1) = -ak0;
-  constraints.A.block(7 * dim_, 1, dim_, 1) = -ak1;
-  constraints.b.segment(7 * dim_, dim_) = sysdata_.am[k + 1];
+  constraints.A.block(2 * dim_, 0, dim_, 1) = ak0;
+  constraints.A.block(2 * dim_, 1, dim_, 1) = ak1;
+  constraints.b.segment(2 * dim_, dim_) = sysdata_.am[k + 1];
+  constraints.A.block(3 * dim_, 0, dim_, 1) = -ak0;
+  constraints.A.block(3 * dim_, 1, dim_, 1) = -ak1;
+  constraints.b.segment(3 * dim_, dim_) = sysdata_.am[k + 1];
 }
 
 void ToptSolver::get3rdlimit(int k, const std::vector<double>& x0_list,
@@ -735,9 +735,6 @@ double ToptSolver::checkLimits(const std::vector<double>& x0_list) {
     // 2nd - acceleration
     qddotk = sysdata_.ddq[k] * (x0_list[k]) + sysdata_.dq[k] * uk;
     rossy_utils::saveVector(qddotk, "topt/qacc");
-    // 2nd - trqk = m dds + b ds2 + g
-    trqk = sysdata_.m[k] * uk + sysdata_.b[k] * x0_list[k] + sysdata_.g[k];
-    rossy_utils::saveVector(trqk, "topt/trq");
 
     // 3rd - jerk
     if (k == 0)
@@ -750,24 +747,6 @@ double ToptSolver::checkLimits(const std::vector<double>& x0_list) {
     // if(k==0) qddotk_pre = qddotk;
     // qdddotk = (qddotk - qddotk_pre)/dtk;
     qddotk_pre = qddotk;
-
-    // fill in check_limits for print
-    check_limits(k, 0) = x0_list[k];
-    check_limits(k, 1) = dtk;
-    temp = rossy_utils::getMaxRatioValue(qdotk2, sysdata_.vm2[k]);
-    check_limits(k, 2) = sqrt(temp);
-    if (temp > motion_in_limit) motion_in_limit = temp;
-    temp = rossy_utils::getMaxRatioValue(qddotk, sysdata_.am[k]);
-    check_limits(k, 3) = temp;
-    if (temp > motion_in_limit) motion_in_limit = temp;
-    temp = rossy_utils::getMaxRatioValue(trqk, sysdata_.tm[k]);
-    check_limits(k, 4) = temp;
-    if (temp > motion_in_limit) motion_in_limit = temp;
-    temp = rossy_utils::getMaxRatioValue(qdddotk, sysdata_.jm[k]);
-    check_limits(k, 5) = temp;
-    if (temp > motion_in_limit) motion_in_limit = temp;
-    check_limits(k, 6) = grineq;
-    if (grineq > motion_in_limit) motion_in_limit = grineq;
 
     if (k < num_wpts - 1) duration += dtk;
   }

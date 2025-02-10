@@ -48,12 +48,8 @@ class SYSTEM_DATA {
   std::vector<Eigen::VectorXd> dq;   // q'
   std::vector<Eigen::VectorXd> ddq;  // q''
 
-  std::vector<Eigen::VectorXd> m;    // mass coeffs
-  std::vector<Eigen::VectorXd> b;    // coriolis coeffs
-  std::vector<Eigen::VectorXd> g;    // gravity coeffs
   std::vector<Eigen::VectorXd> av;   // vel coeffs
   std::vector<Eigen::VectorXd> vm2;  // vel max square
-  std::vector<Eigen::VectorXd> tm;   // torque max
   std::vector<Eigen::VectorXd> am;   // acceleration max
   std::vector<Eigen::VectorXd> jm;   // jerk max
 
@@ -65,10 +61,6 @@ class SYSTEM_DATA {
     dq.resize(n);
     ddq.resize(n);
 
-    m.resize(n);
-    b.resize(n);
-    g.resize(n);
-    tm.resize(n);
     am.resize(n);
     jm.resize(n);
     av.resize(n);
@@ -81,10 +73,6 @@ class SYSTEM_DATA {
     for (auto& data : q) rossy_utils::saveVector(data, "pathparam/q");
     for (auto& data : dq) rossy_utils::saveVector(data, "pathparam/dq");
     for (auto& data : ddq) rossy_utils::saveVector(data, "pathparam/ddq");
-    for (auto& data : m) rossy_utils::saveVector(data, "pathparam/m");
-    for (auto& data : b) rossy_utils::saveVector(data, "pathparam/b");
-    for (auto& data : g) rossy_utils::saveVector(data, "pathparam/g");
-    for (auto& data : tm) rossy_utils::saveVector(data, "pathparam/tm");
     for (auto& data : am) rossy_utils::saveVector(data, "pathparam/am");
     for (auto& data : jm) rossy_utils::saveVector(data, "pathparam/jm");
     for (auto& data : av) rossy_utils::saveVector(data, "pathparam/av");

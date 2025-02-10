@@ -19,8 +19,6 @@ public:
         max_joint_jerk = Eigen::VectorXd::Zero(num_joints);
         max_joint_torque = Eigen::VectorXd::Zero(num_joints);
         
-        max_linear_velocity = -1;
-        max_linear_acceleration = -1;
     }
 
     // Joint limits
@@ -29,26 +27,23 @@ public:
     Eigen::VectorXd max_joint_jerk;
     Eigen::VectorXd max_joint_torque;
 
-    // End-effector limits
-    double max_linear_velocity;
-    double max_linear_acceleration;
-
     // Convert to SYSTEM_DATA format used internally
-    SYSTEM_DATA toSystemData(const std::vector<Eigen::VectorXd>& waypoints) const {
+    SYSTEM_DATA toSystemData(const std::shared_ptr<TrajectoryManager>& traj_manager) const {
         SYSTEM_DATA sysdata;
-        int n = waypoints.size();
+        int n = traj_manager->spline_s2q_.get_num_segments();
         sysdata.resize(n);
 
         // Set path waypoints
         for(int i = 0; i < n; i++) {
             sysdata.s[i] = i / double(n-1); // Normalize path parameter to [0,1]
-            sysdata.q[i] = waypoints[i];
+            sysdata.q[i] = traj_manager->spline_s2q_.evaluate(sysdata.s[i]);
+            sysdata.dq[i] = traj_manager->spline_s2q_.evaluateFirstDerivative(sysdata.s[i]);
+            sysdata.ddq[i] = traj_manager->spline_s2q_.evaluateSecondDerivative(sysdata.s[i]);
             
             // Set limits at each waypoint
             sysdata.vm2[i] = max_joint_velocity.cwiseProduct(max_joint_velocity);
             sysdata.am[i] = max_joint_acceleration;
             sysdata.jm[i] = max_joint_jerk;
-            sysdata.tm[i] = max_joint_torque;
         }
 
         return sysdata;
@@ -61,9 +56,7 @@ public:
 class Toppra3Parameterization {
 public:
     Toppra3Parameterization(int num_joints) : 
-        num_joints_(num_joints),
-        solver_(num_joints),
-        traj_manager_() {}
+        num_joints_(num_joints) {}
 
     /**
      * @brief Solve for time-optimal trajectory
@@ -76,42 +69,25 @@ public:
     bool solve(const std::vector<Eigen::VectorXd>& waypoints,
               const RobotLimits& limits,
               bool use_jerk_limits = true) {
+
+        std::cout << "Toppra3Parameterization::solve 0" << std::endl;
+        std::shared_ptr<TrajectoryManager> traj_manager_ = std::make_shared<TrajectoryManager>();
+        std::cout << "Toppra3Parameterization::solve 1" << std::endl;
+        std::shared_ptr<ToptSolver> solver_ = std::make_shared<ToptSolver>(num_joints_);
+        std::cout << "Toppra3Parameterization::solve 2" << std::endl;
         
         // Convert waypoints to normalized path
         std::vector<Eigen::VectorXd> normalized_waypoints;
-        traj_manager_.redistQwptsPureNormDist(waypoints, normalized_waypoints);
-
+        std::cout << "Toppra3Parameterization::solve 3" << std::endl;
+        traj_manager_->redistQwptsPureNormDist(waypoints, normalized_waypoints);
+        std::cout << "Toppra3Parameterization::solve 4" << std::endl;
         // Convert limits to system data format
         SYSTEM_DATA sysdata = limits.toSystemData(normalized_waypoints);
-
+        std::cout << "Toppra3Parameterization::solve 5" << std::endl;
         // Solve time-optimal parameterization
-        bool success = solver_.solve(sysdata, &traj_manager_, use_jerk_limits);
-
+        bool success = solver_->solve(sysdata, traj_manager_.get(), use_jerk_limits);
+        std::cout << "Toppra3Parameterization::solve 6" << std::endl;
         return success;
-    }
-
-    /**
-     * @brief Get trajectory state at time t
-     * 
-     * @param time Time along trajectory
-     * @param position Output joint positions
-     * @param velocity Output joint velocities 
-     * @param acceleration Output joint accelerations
-     */
-    void getState(double time,
-                 Eigen::VectorXd& position,
-                 Eigen::VectorXd& velocity,
-                 Eigen::VectorXd& acceleration) {
-        traj_manager_.getCommand(time, position, velocity, acceleration);
-    }
-
-    /**
-     * @brief Get total trajectory duration
-     */
-    double getDuration() {
-        std::vector<double> periods;
-        traj_manager_.getMotionPeriods(periods);
-        return periods.back();
     }
 
     // Add this getter method
@@ -119,8 +95,6 @@ public:
 
 private:
     int num_joints_;
-    ToptSolver solver_;
-    TrajectoryManager traj_manager_;
 };
 
 }  // namespace toppra3

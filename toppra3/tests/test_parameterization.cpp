@@ -46,33 +46,6 @@ int main() {
     
     std::cout << "Successfully found trajectory solution" << std::endl;
     
-    // Get trajectory duration
-    double duration = parameterizer.getDuration();
-    std::cout << "Trajectory duration: " << duration << " seconds" << std::endl;
-    
-    // Test some points along the trajectory
-    std::vector<double> test_times = {0.0, duration/2.0, duration};
-    
-    for (double t : test_times) {
-        Eigen::VectorXd position(num_dof);
-        Eigen::VectorXd velocity(num_dof);
-        Eigen::VectorXd acceleration(num_dof);
-        
-        parameterizer.getState(t, position, velocity, acceleration);
-        
-        std::cout << "\nAt time " << t << ":" << std::endl;
-        std::cout << "Position: " << position.transpose() << std::endl;
-        std::cout << "Velocity: " << velocity.transpose() << std::endl;
-        std::cout << "Acceleration: " << acceleration.transpose() << std::endl;
-        
-        // Basic checks
-        if (velocity.norm() > limits.max_joint_velocity.norm()) {
-            std::cerr << "Warning: Velocity limit exceeded!" << std::endl;
-        }
-        if (acceleration.norm() > limits.max_joint_acceleration.norm()) {
-            std::cerr << "Warning: Acceleration limit exceeded!" << std::endl;
-        }
-    }
     
     return 0;
 } 

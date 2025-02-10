@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(PYBIND11_FINDPYTHON ON)
 
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
+
+
 # Find required packages
 find_package(Eigen3 REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
@@ -22,6 +26,15 @@ find_library(libCoinUtils
             HINTS /usr/lib /usr/lib/x86_64-linux-gnu
             REQUIRED)
 
+include(FetchContent)
+
+# Also requires one of: libbfd (gnu binutils), libdwarf, libdw (elfutils)
+FetchContent_Declare(backward
+    GIT_REPOSITORY https://github.com/bombela/backward-cpp
+    GIT_TAG master  # or a version tag, such as v1.6
+    SYSTEM          # optional, the Backward include directory will be treated as system directory
+)
+FetchContent_MakeAvailable(backward)
 
 add_subdirectory(rossy_utils)
 
@@ -34,8 +47,6 @@ set(GOLDFARB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
 set(SDLP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
 set(CLP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
 
 include_directories(
     ${ROSSY_UTILS_INCLUDE_DIR}
@@ -65,7 +76,7 @@ target_compile_features(libtoppra3 PUBLIC cxx_std_17)
 
 # Link dependencies
 target_link_libraries(libtoppra3 PUBLIC
-    Eigen3::Eigen rossy_utils ${libCoinUtils} ${libClp}
+    Eigen3::Eigen rossy_utils ${libCoinUtils} ${libClp} Backward::Interface
 )
 
 # Add python bindings
@@ -115,5 +126,5 @@ add_executable(test_parameterization
 
 # Link against the main library
 target_link_libraries(test_parameterization PRIVATE
-    libtoppra3
+    libtoppra3 Backward::Interface
 )
