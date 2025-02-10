@@ -300,13 +300,13 @@ bool ToptSolver::solve(const SYSTEM_DATA& sysdata, TrajectoryManager* traj,
   // 1. compute controllable_xmax_, reachable_xmax_
   clock_->start();
   bool soln_exist = solveTOPPRA();
-  TOPT_DEBUG_MSG("DHC: solveTOPPRA()=" << clock_->stop() << "ms" << std::endl);
+  TOPT_DEBUG_MSG("solveTOPPRA()=" << clock_->stop() << "ms" << std::endl);
 
   // return if no jerk limit violation
   double limitratio = 2.0;
 
   if (!soln_exist) {
-    TOPT_DEBUG_MSG("DHC: ------ toppra - 2nd order ------ " << std::endl);
+    TOPT_DEBUG_MSG("------ toppra - 2nd order ------ " << std::endl);
     limitratio = checkLimits(reachable_xmax_);
     return false;
   }
@@ -318,12 +318,12 @@ bool ToptSolver::solve(const SYSTEM_DATA& sysdata, TrajectoryManager* traj,
   // 2. compute trackable_xmax_
   clock_->start();
   solveTOPP3(reachable_xmax_);
-  TOPT_DEBUG_MSG("DHC: solveTOPP3()=" << clock_->stop() << "ms" << std::endl);
+  TOPT_DEBUG_MSG("solveTOPP3()=" << clock_->stop() << "ms" << std::endl);
 
   // 3. generate spline_t2s_
   clock_->start();
   traj->setT2SSpline(sysdata_.s, trackable_xmax_);
-  TOPT_DEBUG_MSG("DHC: setT2QSpline()=" << clock_->stop() << "ms" << std::endl);
+  TOPT_DEBUG_MSG("setT2QSpline()=" << clock_->stop() << "ms" << std::endl);
 
   return true;
 }
@@ -417,7 +417,7 @@ bool ToptSolver::solveTOPPRA(int i_c) {
   // if x = 0 during the motion
   for (int i(i_c + 1); i < num_wpts - 1; ++i) {
     if (reachable_xmax_[i] < 0.5 * MIN_SDOT_) {
-      TOPT_DEBUG_MSG("DHC: solveTOPPRA() -> no solution exists" << std::endl);
+      TOPT_DEBUG_MSG("solveTOPPRA() -> no solution exists" << std::endl);
       return false;
     }
   }
@@ -760,7 +760,7 @@ double ToptSolver::checkLimits(const std::vector<double>& x0_list) {
 
   rossy_utils::pretty_print(check_limits, std::cout,
                             "_sdot_dt_vel_acc_trq_jerk_grasp");
-  TOPT_DEBUG_MSG("DHC: duration = " << duration << std::endl);
+  TOPT_DEBUG_MSG("duration = " << duration << std::endl);
 
   return motion_in_limit;
 }
