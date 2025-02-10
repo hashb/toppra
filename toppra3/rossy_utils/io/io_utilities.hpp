@@ -8,7 +8,6 @@
 #include <list>
 
 #include <Eigen/Dense>
-#include <yaml/yaml.h>
 
 enum myColor {
   Red = 0,
@@ -47,30 +46,6 @@ void saveValue(double _value, std::string _name, bool b_param = false);
 void cleaningFile(std::string file_name_, std::string& ret_file_, bool b_param);
 static std::list<std::string> gs_fileName_string;  // global & static
 
-// =========================================================================
-// Read File
-// =========================================================================
-void readFile(std::string file_name_, std::vector<std::string>& _vec);
-void splitString(std::string* str_array, std::string strTarget,
-                 std::string strTok);
-template <typename YamlType>
-YamlType readParameter(const YAML::Node& node, const std::string& name) {
-  try {
-    return node[name.c_str()].as<YamlType>();
-  } catch (...) {
-    throw std::runtime_error(name);
-  }
-};
-
-template <typename YamlType>
-void readParameter(const YAML::Node& node, const std::string& name,
-                   YamlType& parameter) {
-  try {
-    parameter = readParameter<YamlType>(node, name);
-  } catch (...) {
-    throw std::runtime_error(name);
-  }
-};
 
 // =========================================================================
 // Pretty Print

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <memory>
 #include <vector>
+
 #include "toppra/topt_solver.hpp"
 #include "toppra/trajectory_manager.hpp"
 #include "toppra/user_command.hpp"
@@ -87,7 +89,7 @@ class Toppra3Parameterization {
     traj_manager_->redistQwptsPureNormDist(waypoints, normalized_waypoints);
     std::cout << "Toppra3Parameterization::solve 4" << std::endl;
     // Convert limits to system data format
-    SYSTEM_DATA sysdata = limits.toSystemData(normalized_waypoints);
+    SYSTEM_DATA sysdata = limits.toSystemData(traj_manager_);
     std::cout << "Toppra3Parameterization::solve 5" << std::endl;
     // Solve time-optimal parameterization
     bool success = solver_->solve(sysdata, traj_manager_.get(), use_jerk_limits);
