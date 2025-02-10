@@ -312,6 +312,7 @@ void TrajectoryManager::redistQwptsPureNormDist(
   Eigen::VectorXd q_uni;
   for (int i(0); i < num_new_wpts; i++) {
     s = ((double)i / (double)(num_new_wpts - 1));
+    s2q_gridpoints_.push_back(s);
     q_uni = spline_s2q_.evaluate(s);
     qwpts.push_back(q_uni);
   }

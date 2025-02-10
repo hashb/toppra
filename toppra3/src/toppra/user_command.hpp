@@ -5,42 +5,6 @@
 #include <Eigen/Dense>
 #include <rossy_utils/io/io_utilities.hpp>
 
-class PLANNING_COMMAND {
- public:
-  PLANNING_COMMAND() {
-    joint_path.clear();
-
-    // should be set
-    max_joint_acceleration = {};
-    max_joint_speed = {};
-    max_joint_jerk = {};
-
-    max_linear_acceleration = -1.;
-    max_linear_speed = -1.;
-
-    acc_percentage_path_ratio = 0.;
-    acc_percentage = 1.;
-    dec_percentage_path_ratio = 0.;
-    dec_percentage = 1.;
-  }
-  ~PLANNING_COMMAND() {}
-
- public:
-  std::vector<Eigen::VectorXd> joint_path;
-
-  Eigen::VectorXd max_joint_acceleration;
-  Eigen::VectorXd max_joint_speed;
-  Eigen::VectorXd max_joint_jerk;
-
-  double max_linear_acceleration;
-  double max_linear_speed;
-
-  double acc_percentage_path_ratio;
-  double acc_percentage;
-  double dec_percentage_path_ratio;
-  double dec_percentage;
-};
-
 class SYSTEM_DATA {
  public:
   std::vector<double> s;

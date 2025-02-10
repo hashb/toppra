@@ -33,18 +33,6 @@ PYBIND11_MODULE(_toppra3, m) {
         })
         .def("set_max_joint_torque", [](toppra3::RobotLimits& self, const Eigen::VectorXd& value) {
             self.max_joint_torque = value;
-        })
-        .def("get_max_linear_velocity", [](const toppra3::RobotLimits& self) {
-            return self.max_linear_velocity;
-        })
-        .def("set_max_linear_velocity", [](toppra3::RobotLimits& self, double value) {
-            self.max_linear_velocity = value;
-        })
-        .def("get_max_linear_acceleration", [](const toppra3::RobotLimits& self) {
-            return self.max_linear_acceleration;
-        })
-        .def("set_max_linear_acceleration", [](toppra3::RobotLimits& self, double value) {
-            self.max_linear_acceleration = value;
         });
 
     py::class_<toppra3::Toppra3Parameterization>(m, "Toppra3Parameterization")
