@@ -116,6 +116,9 @@ public:
         return periods.back();
     }
 
+    // Add this getter method
+    int getNumJoints() const { return num_joints_; }
+
 private:
     int num_joints_;
     ToptSolver solver_;

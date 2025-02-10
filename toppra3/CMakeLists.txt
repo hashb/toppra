@@ -11,6 +11,18 @@ set(PYBIND11_FINDPYTHON ON)
 find_package(Eigen3 REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
+# clp
+find_library(libClp
+            NAMES libClp.so
+            HINTS /usr/lib /usr/lib/x86_64-linux-gnu
+            REQUIRED)
+
+find_library(libCoinUtils
+            libCoinUtils.so
+            HINTS /usr/lib /usr/lib/x86_64-linux-gnu
+            REQUIRED)
+
+
 add_subdirectory(rossy_utils)
 
 ##=============================================================================

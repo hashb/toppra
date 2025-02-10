@@ -25,9 +25,9 @@ PYBIND11_MODULE(toppra3, m) {
              py::arg("use_jerk_limits") = true)
         .def("get_state", [](Toppra3Parameterization& self, double time) {
             Eigen::VectorXd position, velocity, acceleration;
-            position.resize(self.num_joints_);
-            velocity.resize(self.num_joints_);
-            acceleration.resize(self.num_joints_);
+            position.resize(self.getNumJoints());
+            velocity.resize(self.getNumJoints());
+            acceleration.resize(self.getNumJoints());
             
             self.getState(time, position, velocity, acceleration);
             
