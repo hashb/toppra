@@ -83,6 +83,24 @@ target_include_directories(_toppra3 PRIVATE
     ${ROSSY_UTILS_INCLUDE_DIR}
 )
 
+add_custom_target(generate_stub ALL
+    COMMAND ${Python_EXECUTABLE} "-m" "pybind11_stubgen" "-o${CMAKE_CURRENT_BINARY_DIR}" "_toppra3"
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:_toppra3>
+    DEPENDS _toppra3
+)
+
+# rename the generated .pyi file to __init__.pyi
+add_custom_target(rename_pyi ALL
+    COMMAND mv ${CMAKE_CURRENT_BINARY_DIR}/_toppra3.pyi ${CMAKE_CURRENT_BINARY_DIR}/__init__.pyi
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:_toppra3>
+    DEPENDS generate_stub
+)
+
 # Installation rules
 install(TARGETS rossy_utils LIBRARY DESTINATION toppra3/lib)
 install(TARGETS _toppra3 LIBRARY DESTINATION toppra3)
+install(DIRECTORY
+    $<TARGET_FILE_DIR:_toppra3>/
+    DESTINATION toppra3
+    FILES_MATCHING REGEX "\.pyi$"
+)
