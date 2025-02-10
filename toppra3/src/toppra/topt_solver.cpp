@@ -17,7 +17,7 @@
 #include "rossy_utils/math/math_utilities.hpp"
 
 ToptSolver::ToptSolver(int dim) {
-  rossy_utils::pretty_constructor(2, "ToptSolver");
+  // rossy_utils::pretty_constructor(2, "ToptSolver");
   dim_ = dim;  // robot actuator dimension
   lpsolver_ = new LPSolver();
 

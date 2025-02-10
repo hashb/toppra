@@ -3,7 +3,7 @@
 #include "rossy_utils/io/io_utilities.hpp"
 
 TrajectoryManager::TrajectoryManager() {
-  rossy_utils::pretty_constructor(1, "TrajectoryManager");
+  // rossy_utils::pretty_constructor(1, "TrajectoryManager");
   use_t2q_ = false;
   use_t2s_ = false;
 }

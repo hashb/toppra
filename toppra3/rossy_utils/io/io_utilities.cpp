@@ -143,7 +143,7 @@ void pretty_constructor(const int& _num_tab, const std::string& _name) {
         color = myColor::BoldMagneta;
         break;
       default:
-        std::cout << "no such color in pretty_constructor" << std::endl;
+        // std::cout << "no such color in pretty_constructor" << std::endl;
         exit(0);
     }
   } else {
