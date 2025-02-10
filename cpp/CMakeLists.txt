@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22.1)
 
 project(toppra
   VERSION 0.6.2
@@ -21,7 +21,6 @@ option(TOPPRA_WARN_ON "Enable warning messages" ON)
 option(OPT_MSGPACK "Serialization using msgpack" OFF)
 # Bindings
 option(PYTHON_BINDINGS "Build bindings for Python" ON)
-set(PYTHON_VERSION 3.7 CACHE STRING "Build bindings for Python version")
 set(BUILD_WITH_PINOCCHIO_PYTHON false CACHE BOOL "Force compile with Pinocchio bindings")
 # This option is needed because sometime the flag
 # PINOCCHIO_WITH_PYTHON_INTERFACE is not properly set depsite a python
@@ -40,7 +39,8 @@ include_directories("${PROJECT_SOURCE_DIR}/build")
 include_directories("/usr/local/include")
 link_directories("/usr/local/lib")
 
-set(PYBIND11_PYTHON_VERSION "${PYTHON_VERSION}")
+# Pybind
+set(PYBIND11_FINDPYTHON ON)
 include(CMakePrintHelpers)
 
 find_package (Threads)

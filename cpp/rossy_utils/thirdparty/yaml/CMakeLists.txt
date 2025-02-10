@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.22.1)
 project (yamlwrapper)
 
 set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)

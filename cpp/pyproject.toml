@@ -1,0 +1,30 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "pybind11>=2.6.0",
+    "cmake>=3.18",
+    "scikit-build>=0.12"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "toppra-cpp"
+version = "0.1.0"
+description = "C++ implementation of TOPPRA (Time-Optimal Path Parameterization) with Python bindings"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.scikit-build]
+cmake.build-type = "RelWithDebInfo"
+cmake.verbose = true
+logging.level = "DEBUG"
+build-dir = "build"
