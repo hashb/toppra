@@ -34,6 +34,9 @@ set(GOLDFARB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
 set(SDLP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
 set(CLP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
 
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
+
 include_directories(
     ${ROSSY_UTILS_INCLUDE_DIR}
     ${YAML_INCLUDE_DIR}
@@ -103,4 +106,14 @@ install(DIRECTORY
     $<TARGET_FILE_DIR:_toppra3>/
     DESTINATION toppra3
     FILES_MATCHING REGEX "\.pyi$"
+)
+
+# Add the test file to your test executable
+add_executable(test_parameterization 
+    tests/test_parameterization.cpp
+)
+
+# Link against the main library
+target_link_libraries(test_parameterization PRIVATE
+    libtoppra3
 )

@@ -6,6 +6,8 @@
 #include "toppra/topt_solver.hpp"
 #include "toppra/trajectory_manager.hpp"
 
+
+namespace toppra3 {
 /**
  * @brief Class containing robot joint limits and constraints
  */
@@ -120,3 +122,5 @@ private:
     ToptSolver solver_;
     TrajectoryManager traj_manager_;
 };
+
+}  // namespace toppra3

@@ -8,22 +8,52 @@ namespace py = pybind11;
 PYBIND11_MODULE(_toppra3, m) {
     m.doc() = "Python bindings for TOPPRA3 trajectory parameterization library";
 
-    py::class_<RobotLimits>(m, "RobotLimits")
+    py::class_<toppra3::RobotLimits>(m, "RobotLimits")
         .def(py::init<int>())
-        .def_readwrite("max_joint_velocity", &RobotLimits::max_joint_velocity)
-        .def_readwrite("max_joint_acceleration", &RobotLimits::max_joint_acceleration)
-        .def_readwrite("max_joint_jerk", &RobotLimits::max_joint_jerk)
-        .def_readwrite("max_joint_torque", &RobotLimits::max_joint_torque)
-        .def_readwrite("max_linear_velocity", &RobotLimits::max_linear_velocity)
-        .def_readwrite("max_linear_acceleration", &RobotLimits::max_linear_acceleration);
+        .def("get_max_joint_velocity", [](const toppra3::RobotLimits& self) {
+            return Eigen::VectorXd(self.max_joint_velocity);
+        })
+        .def("set_max_joint_velocity", [](toppra3::RobotLimits& self, const Eigen::VectorXd& value) {
+            self.max_joint_velocity = value;
+        })
+        .def("get_max_joint_acceleration", [](const toppra3::RobotLimits& self) {
+            return Eigen::VectorXd(self.max_joint_acceleration);
+        })
+        .def("set_max_joint_acceleration", [](toppra3::RobotLimits& self, const Eigen::VectorXd& value) {
+            self.max_joint_acceleration = value;
+        })
+        .def("get_max_joint_jerk", [](const toppra3::RobotLimits& self) {
+            return Eigen::VectorXd(self.max_joint_jerk);
+        })
+        .def("set_max_joint_jerk", [](toppra3::RobotLimits& self, const Eigen::VectorXd& value) {
+            self.max_joint_jerk = value;
+        })
+        .def("get_max_joint_torque", [](const toppra3::RobotLimits& self) {
+            return Eigen::VectorXd(self.max_joint_torque);
+        })
+        .def("set_max_joint_torque", [](toppra3::RobotLimits& self, const Eigen::VectorXd& value) {
+            self.max_joint_torque = value;
+        })
+        .def("get_max_linear_velocity", [](const toppra3::RobotLimits& self) {
+            return self.max_linear_velocity;
+        })
+        .def("set_max_linear_velocity", [](toppra3::RobotLimits& self, double value) {
+            self.max_linear_velocity = value;
+        })
+        .def("get_max_linear_acceleration", [](const toppra3::RobotLimits& self) {
+            return self.max_linear_acceleration;
+        })
+        .def("set_max_linear_acceleration", [](toppra3::RobotLimits& self, double value) {
+            self.max_linear_acceleration = value;
+        });
 
-    py::class_<Toppra3Parameterization>(m, "Toppra3Parameterization")
+    py::class_<toppra3::Toppra3Parameterization>(m, "Toppra3Parameterization")
         .def(py::init<int>())
-        .def("solve", &Toppra3Parameterization::solve,
+        .def("solve", &toppra3::Toppra3Parameterization::solve,
              py::arg("waypoints"),
              py::arg("limits"),
              py::arg("use_jerk_limits") = true)
-        .def("get_state", [](Toppra3Parameterization& self, double time) {
+        .def("get_state", [](toppra3::Toppra3Parameterization& self, double time) {
             Eigen::VectorXd position, velocity, acceleration;
             position.resize(self.getNumJoints());
             velocity.resize(self.getNumJoints());
@@ -33,5 +63,5 @@ PYBIND11_MODULE(_toppra3, m) {
             
             return py::make_tuple(position, velocity, acceleration);
         }, "Get trajectory state (position, velocity, acceleration) at given time")
-        .def("get_duration", &Toppra3Parameterization::getDuration);
+        .def("get_duration", &toppra3::Toppra3Parameterization::getDuration);
 }
