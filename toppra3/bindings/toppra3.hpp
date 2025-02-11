@@ -184,6 +184,11 @@ class Toppra3Parameterization {
     std::cout << std::endl;
     std::cout << "Toppra3Parameterization::solve POSTPROCESSING 7 (" << clock.stop()
               << "ms)" << std::endl;
+    if (!success) {
+      OutputData output_data;
+      output_data.success = false;
+      return output_data;
+    }
 
     // mapping to compute segment index
     // linearly interpolate input_times and segment_indices
