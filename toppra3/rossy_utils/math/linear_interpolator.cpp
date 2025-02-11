@@ -27,6 +27,10 @@ double LinearInterpolator::interpolate(double x) const {
         throw std::out_of_range("x value outside interpolation range x = " + std::to_string(x) + " x_values_.front() = " + std::to_string(x_values_.front()) + " x_values_.back() = " + std::to_string(x_values_.back()));
     }
 
+    if (x > x_values_.back()) {
+        return y_values_.back();
+    }
+
     // Find the right interval using binary search
     auto it = std::lower_bound(x_values_.begin(), x_values_.end(), x);
     
