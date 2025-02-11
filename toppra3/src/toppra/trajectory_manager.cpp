@@ -67,6 +67,7 @@ void TrajectoryManager::setT2SSpline(const std::vector<double>& s_list,
 
   spline_t2s_.compute();
   spline_t2s_.getPeroids(ts_);
+  t2q_gridpoints_ = ts_;
 }
 
 // if NCSpln4Vec
@@ -295,6 +296,9 @@ void TrajectoryManager::redistQwptsPureNormDist(
   for (int i(0); i < num_wpts; i++) {
     slist[i] = (slist[i] / ssum);
   }
+
+  // copy slist to s2q_times_
+  s2q_times_ = slist;
 
   // Create spline mapping normalized distance to configurations
   spline_s2q_.initialize(qwpts0[0].size());

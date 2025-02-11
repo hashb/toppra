@@ -124,7 +124,14 @@ add_executable(test_parameterization
     tests/test_parameterization.cpp
 )
 
+target_include_directories(test_parameterization PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${ROSSY_UTILS_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
+)
+
 # Link against the main library
 target_link_libraries(test_parameterization PRIVATE
-    libtoppra3 Backward::Interface
+    libtoppra3 rossy_utils Backward::Interface
 )

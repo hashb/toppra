@@ -50,6 +50,7 @@ class TrajectoryManager {
   // HQSpln4Vec spline_t2q_;
   // NVCQSpln4Vec spline_t2q_;
   std::vector<double> ts_;
+  std::vector<double> s2q_times_;
   std::vector<double> s2q_gridpoints_;
   std::vector<double> t2q_gridpoints_;
 
