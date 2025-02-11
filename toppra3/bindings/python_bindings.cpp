@@ -42,7 +42,8 @@ PYBIND11_MODULE(_toppra3, m) {
 
     py::class_<toppra3::OutputData>(m, "OutputData")
         .def(py::init<>())
-        .def_readwrite("waypoints", &toppra3::OutputData::waypoints);
+        .def_readwrite("waypoints", &toppra3::OutputData::waypoints)
+        .def_readwrite("success", &toppra3::OutputData::success);
 
     py::class_<toppra3::Toppra3Parameterization>(m, "Toppra3Parameterization")
         .def(py::init<int>())
