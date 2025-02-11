@@ -241,7 +241,9 @@ class Toppra3Parameterization {
           timed_waypoint.time_from_previous = interpolated_times[i] - interpolated_times[i-1];
         }
         timed_waypoint.segment_index = spl_segment_indicies_at_parameterized_times.interpolate(interpolated_times[i]);
+        timed_waypoint.is_path_position = true;
         output_data.waypoints.push_back(timed_waypoint);
+
     }
     std::cout << "Toppra3Parameterization::solve POSTPROCESSING 11 (" << clock.stop()
               << "ms)" << std::endl;

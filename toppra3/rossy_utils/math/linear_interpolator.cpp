@@ -23,8 +23,8 @@ LinearInterpolator::LinearInterpolator(const std::vector<double>& x, const std::
 }
 
 double LinearInterpolator::interpolate(double x) const {
-    if (x < x_values_.front() || x > x_values_.back()) {
-        throw std::out_of_range("x value outside interpolation range");
+    if (x < x_values_.front() || x > x_values_.back() + 1e-5) {
+        throw std::out_of_range("x value outside interpolation range x = " + std::to_string(x) + " x_values_.front() = " + std::to_string(x_values_.front()) + " x_values_.back() = " + std::to_string(x_values_.back()));
     }
 
     // Find the right interval using binary search
