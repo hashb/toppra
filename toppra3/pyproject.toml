@@ -37,7 +37,7 @@ addopts = "-v --tb=short"
 [tool.cibuildwheel]
 # Only build for Python 3.11 and disable PyPy
 build = "cp311-*"
-skip = "pp*"
+skip = "pp* *-musllinux_*"
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 
@@ -46,13 +46,16 @@ environment = { CMAKE_ARGS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON" }
 
 [tool.cibuildwheel.linux]
 before-all = [
-    # "yum update",
-    # "yum install -y epel-release",
-    # "yum install -y eigen3-devel",  # For CentOS/RHEL
-    # "yum install -y coin-or-Clp-devel",
-    # Alternatively for Ubuntu/Debian:
-    "apt-get update && apt-get install -y libeigen3-dev",
-    "apt-get update && apt-get install -y coinor-clp coinor-libclp-dev"
+    # Install dependencies
+    "yum install -y wget sudo",
+    # Install Eigen
+    "wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz",
+    "tar -xzf eigen-3.4.0.tar.gz",
+    "cd eigen-3.4.0 && mkdir build && cd build && cmake .. && make install",
+    # Install Clp
+    "wget https://raw.githubusercontent.com/coin-or/coinbrew/master/coinbrew",
+    "chmod u+x coinbrew",
+    "./coinbrew fetch build Clp@releases/1.17.10 -j 10 -t none -p /usr",
 ]
 
 [tool.cibuildwheel.macos]
