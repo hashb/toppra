@@ -58,3 +58,5 @@ before-all = [
 [tool.cibuildwheel.macos]
 before-all = "brew install eigen clp coinutils"
 archs = ["arm64"]
+environment = { MACOSX_DEPLOYMENT_TARGET="10.13" }
+
