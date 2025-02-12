@@ -7,9 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(PYBIND11_FINDPYTHON ON)
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
-
+# add_compile_options(-fsanitize=address)
+# add_link_options(-fsanitize=address)
 
 # Find required packages
 find_package(Eigen3 REQUIRED)
@@ -17,14 +16,22 @@ find_package(pybind11 CONFIG REQUIRED)
 
 # clp
 find_library(libClp
-            NAMES libClp.so
-            HINTS /usr/lib /usr/lib/x86_64-linux-gnu
+            NAMES libClp.so libClp.dylib
+            HINTS /usr/lib /usr/lib/x86_64-linux-gnu /opt/homebrew/lib
             REQUIRED)
 
 find_library(libCoinUtils
-            libCoinUtils.so
-            HINTS /usr/lib /usr/lib/x86_64-linux-gnu
+            NAMES libCoinUtils.so libCoinUtils.dylib
+            HINTS /usr/lib /usr/lib/x86_64-linux-gnu /opt/homebrew/lib
             REQUIRED)
+
+include_directories(
+    /opt/homebrew/include/coinutils
+    /opt/homebrew/include/coinutils/coin
+    /opt/homebrew/include/clp
+    /opt/homebrew/include/clp/coin
+)
+
 
 include(FetchContent)
 

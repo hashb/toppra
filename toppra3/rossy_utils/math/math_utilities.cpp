@@ -95,6 +95,7 @@ Eigen::MatrixXd VectortoMatrix(const Eigen::VectorXd& a, int dim) {
   for (int i(0); i < mat.cols(); ++i) {
     mat.col(i) = a.segment(dim * i, dim);
   }
+  return mat;
 }
 
 Eigen::VectorXd vector2EigenVector(const std::vector<double>& vec, int k,
