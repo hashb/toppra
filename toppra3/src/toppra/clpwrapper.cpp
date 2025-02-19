@@ -8,6 +8,9 @@ LPSolver::LPSolver() {
 
   // -1 for maximization, 1 for minimization
   model_->setOptimizationDirection(1);
+
+  // set verbose to 0
+  model_->setLogLevel(0);
 }
 
 LPSolver::~LPSolver() {

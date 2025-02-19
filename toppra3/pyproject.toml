@@ -10,7 +10,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "toppra3"
-version = "0.1.1"
+version = "0.1.2"
 description = "TOPPRA trajectory optimization library"
 authors = [
     {name = "Chenna Kautilya", email = "chenna@outlook.com"},

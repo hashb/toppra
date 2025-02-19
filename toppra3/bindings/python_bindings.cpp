@@ -49,6 +49,6 @@ PYBIND11_MODULE(_toppra3, m) {
         .def(py::init<int>())
         .def("solve", &toppra3::Toppra3Parameterization::solve,
              py::arg("input_data"),
-             py::arg("use_jerk_limits") = true)
+             py::arg("use_jerk_limits") = true, py::call_guard<py::gil_scoped_release>())
         .def("get_num_joints", &toppra3::Toppra3Parameterization::getNumJoints);
 }
