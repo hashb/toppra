@@ -1,9 +1,8 @@
 #include "toppra/trajectory_manager.hpp"
 
-#include "rossy_utils/io/io_utilities.hpp"
 
 TrajectoryManager::TrajectoryManager() {
-  // rossy_utils::pretty_constructor(1, "TrajectoryManager");
+  // toppra::pretty_constructor(1, "TrajectoryManager");
   use_t2q_ = false;
   use_t2s_ = false;
 }
@@ -474,12 +473,8 @@ void TrajectoryManager::checkSplines() {
   Eigen::VectorXd q;
   while (s < 1.) {
     s += ds;
-    rossy_utils::saveValue(s, "spline/s2q_s");
     q = spline_s2q_.evaluate(s);
-    rossy_utils::saveVector(q, "spline/s2q_q");
     q = spline_s2q_.evaluateFirstDerivative(s);
-    rossy_utils::saveVector(q, "spline/s2q_dq");
     q = spline_s2q_.evaluateSecondDerivative(s);
-    rossy_utils::saveVector(q, "spline/s2q_ddq");
   }
 }

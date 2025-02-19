@@ -1,6 +1,6 @@
 #include "math/linear_interpolator.hpp"
 
-namespace rossy_utils {
+namespace toppra {
 namespace math {
 
 LinearInterpolator::LinearInterpolator(const std::vector<double>& x, const std::vector<double>& y) {
@@ -51,4 +51,4 @@ double LinearInterpolator::interpolate(double x) const {
 }
 
 } // namespace math
-} // namespace rossy_utils
+} // namespace toppra

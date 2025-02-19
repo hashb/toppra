@@ -5,9 +5,8 @@
 #include <iostream>
 
 #include <Eigen/Dense>
-#include <io/io_utilities.hpp>
 
-namespace rossy_utils {
+namespace toppra {
 
 // =============================================================================
 // Matrix Utils
@@ -98,4 +97,4 @@ Eigen::VectorXd eulerIntegration(const Eigen::VectorXd& x,
 Eigen::VectorXd doubleIntegration(const Eigen::VectorXd& q,
                                   const Eigen::VectorXd& alpha,
                                   const Eigen::VectorXd& alphad, double dt);
-}  // namespace rossy_utils
+}  // namespace toppra

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "rossy_utils/math/hermite_quintic_splines.hpp"
-#include "rossy_utils/math/natural_cubic_splines.hpp"
-#include "rossy_utils/math/natural_quartic_splines.hpp"
-#include "rossy_utils/math/natural_vcquartic_splines.hpp"
-#include "rossy_utils/math/path_hermite_splines.hpp"
-#include "rossy_utils/math/path_paramerization_splines.hpp"
+// #include "toppra/math/hermite_quintic_splines.hpp"
+#include "toppra/math/natural_cubic_splines.hpp"
+// #include "toppra/math/natural_quartic_splines.hpp"
+// #include "toppra/math/natural_vcquartic_splines.hpp"
+// #include "toppra/math/path_hermite_splines.hpp"
+#include "toppra/math/path_paramerization_splines.hpp"
 #include <Eigen/Dense>
 
 class TrajectoryManager {

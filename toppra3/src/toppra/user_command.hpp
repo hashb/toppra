@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include <Eigen/Dense>
-#include <rossy_utils/io/io_utilities.hpp>
 
 class SYSTEM_DATA {
  public:
@@ -32,14 +31,4 @@ class SYSTEM_DATA {
 
   }
   int getsize() { return q.size(); }
-  void savedata() {
-    for (auto& data : s) rossy_utils::saveValue(data, "pathparam/s");
-    for (auto& data : q) rossy_utils::saveVector(data, "pathparam/q");
-    for (auto& data : dq) rossy_utils::saveVector(data, "pathparam/dq");
-    for (auto& data : ddq) rossy_utils::saveVector(data, "pathparam/ddq");
-    for (auto& data : am) rossy_utils::saveVector(data, "pathparam/am");
-    for (auto& data : jm) rossy_utils::saveVector(data, "pathparam/jm");
-    for (auto& data : av) rossy_utils::saveVector(data, "pathparam/av");
-    for (auto& data : vm2) rossy_utils::saveVector(data, "pathparam/vm2");
-  }
 };

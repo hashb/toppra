@@ -3,7 +3,7 @@
 #include <vector>
 #include <stdexcept>
 
-namespace rossy_utils {
+namespace toppra {
 namespace math {
 
 class LinearInterpolator {
@@ -40,4 +40,4 @@ private:
 };
 
 } // namespace math
-} // namespace rossy_utils
+} // namespace toppra

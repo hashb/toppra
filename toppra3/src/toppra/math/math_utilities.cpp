@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cmath>
 
-namespace rossy_utils {
+namespace toppra {
 
 Eigen::MatrixXd skew(const Eigen::Vector3d& w) {
   // [[ 0, -3,  2],
@@ -336,7 +336,7 @@ bool isInBoundingBox(const Eigen::VectorXd& val, const Eigen::VectorXd& lb,
   for (int i = 0; i < n; ++i) {
     if (lb[i] <= val[i] && val[i] <= ub[i]) {
     } else {
-      rossy_utils::color_print(myColor::BoldMagneta, "Is not BoundingBox");
+      std::cout << "Is not BoundingBox" << std::endl;
       std::cout << i << " th : lb = " << lb[i] << " val = " << val[i]
                 << " ub = " << ub[i] << std::endl;
       ret = false;
@@ -452,4 +452,4 @@ Eigen::VectorXd GetRelativeVector(const Eigen::VectorXd value,
   return ret;
 }
 
-}  // namespace rossy_utils
+}  // namespace toppra

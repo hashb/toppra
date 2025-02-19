@@ -1,5 +1,5 @@
 #include "toppra/user_command.hpp"
-#include "rossy_utils/math/lp_solver.hpp"
+#include "math/lp_solver.hpp"
 
 class LPSolver;
 class TrajectoryManager;

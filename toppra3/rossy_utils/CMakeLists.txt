@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(rossy_utils)
+project(toppra)
 
 set(CMAKE_BUILD_TYPE "Release")
 set(THIRDPARTY_INCLUDE_DIR "thirdparty")
@@ -15,9 +15,9 @@ FILE(GLOB general_headers "general/*.hpp")
 FILE(GLOB io_headers "io/*.hpp")
 FILE(GLOB math_headers "math/*.hpp" "*.h")
 
-add_library(rossy_utils  ${sources} ${general_headers} ${io_headers} ${math_headers})
-target_link_libraries(rossy_utils clpwrapper ${EIGEN_LIBRARIES} ${libCoinUtils} ${libClp})
-target_include_directories(rossy_utils PUBLIC   
+add_library(toppra  ${sources} ${general_headers} ${io_headers} ${math_headers})
+target_link_libraries(toppra clpwrapper ${EIGEN_LIBRARIES} ${libCoinUtils} ${libClp})
+target_include_directories(toppra PUBLIC   
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/${THIRDPARTY_INCLUDE_DIR}>
     $<INSTALL_INTERFACE:include>
@@ -28,23 +28,23 @@ message(status ${PROJECT_SOURCE_DIR})
 
 # First install the dependencies
 install(TARGETS clpwrapper
-        EXPORT rossy_utils-targets
+        EXPORT toppra-targets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin)
 
-# Then install rossy_utils
-install(TARGETS rossy_utils
-        EXPORT rossy_utils-targets
+# Then install toppra
+install(TARGETS toppra
+        EXPORT toppra-targets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
         INCLUDES DESTINATION include)
 
-install(EXPORT rossy_utils-targets
-        FILE rossy_utils-targets.cmake
-        NAMESPACE rossy_utils::
-        DESTINATION lib/cmake/rossy_utils)
+install(EXPORT toppra-targets
+        FILE toppra-targets.cmake
+        NAMESPACE toppra::
+        DESTINATION lib/cmake/toppra)
 
 # Install header files
 install(FILES ${general_headers} 

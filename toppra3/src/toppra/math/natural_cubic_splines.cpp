@@ -3,7 +3,6 @@
 
 #include <algorithm>
 
-#include <io/io_utilities.hpp>
 #include <math/natural_cubic_splines.hpp>
 
 NaturalCubicSplines::NaturalCubicSplines() {
@@ -86,7 +85,7 @@ void NaturalCubicSplines::computeOpt() {
   z = W * A.transpose() * z;
 
   // Eigen::VectorXd udiff= A*z - u;
-  // rossy_utils::pretty_print(udiff, std::cout, "udiff");
+  // toppra::pretty_print(udiff, std::cout, "udiff");
 
   // build zs
   zs.resize(n_wpts + 1);
@@ -133,9 +132,9 @@ void NaturalCubicSplines::computeZeroVelClamped() {
   // z = A.ldlt().solve(u); // psd or nsd A required
   z = A.fullPivHouseholderQr().solve(u);
 
-  // rossy_utils::pretty_print(A, std::cout, "A");
-  // rossy_utils::pretty_print(u, std::cout, "u");
-  // rossy_utils::pretty_print(z, std::cout, "z");
+  // toppra::pretty_print(A, std::cout, "A");
+  // toppra::pretty_print(u, std::cout, "u");
+  // toppra::pretty_print(z, std::cout, "z");
 
   // build zs
   zs.resize(n_wpts + 1);
@@ -180,9 +179,9 @@ void NaturalCubicSplines::computeSameAcc() {
   // z = A.ldlt().solve(u); // psd or nsd A required
   z = A.fullPivHouseholderQr().solve(u);
 
-  // rossy_utils::pretty_print(A, std::cout, "A");
-  // rossy_utils::pretty_print(u, std::cout, "u");
-  // rossy_utils::pretty_print(z, std::cout, "z");
+  // toppra::pretty_print(A, std::cout, "A");
+  // toppra::pretty_print(u, std::cout, "u");
+  // toppra::pretty_print(z, std::cout, "z");
 
   // build zs
   zs.resize(n_wpts + 1);
@@ -229,9 +228,9 @@ void NaturalCubicSplines::computeSameJerk() {
   // z = A.ldlt().solve(u); // psd or nsd A required
   z = A.fullPivHouseholderQr().solve(u);
 
-  // rossy_utils::pretty_print(A, std::cout, "A");
-  // rossy_utils::pretty_print(u, std::cout, "u");
-  // rossy_utils::pretty_print(z, std::cout, "z");
+  // toppra::pretty_print(A, std::cout, "A");
+  // toppra::pretty_print(u, std::cout, "u");
+  // toppra::pretty_print(z, std::cout, "z");
 
   // build zs
   zs.resize(n_wpts + 1);
@@ -271,9 +270,9 @@ void NaturalCubicSplines::computeNatural() {
   z = A.ldlt().solve(u);  // psd or nsd A required
   // z = A.fullPivHouseholderQr().solve(u);
 
-  // rossy_utils::pretty_print(A, std::cout, "A");
-  // rossy_utils::pretty_print(u, std::cout, "u");
-  // rossy_utils::pretty_print(z, std::cout, "z");
+  // toppra::pretty_print(A, std::cout, "A");
+  // toppra::pretty_print(u, std::cout, "u");
+  // toppra::pretty_print(z, std::cout, "z");
 
   // build zs
   zs.resize(n_wpts + 1);

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-#include "natural_spline_types.hpp"
+#include "toppra/math/natural_spline_types.hpp"
 #include <Eigen/Dense>
 
 class NaturalCubicSplines {

@@ -1,12 +1,12 @@
 
-#include "clp/clpwrapper.hpp"
-#include "sdlp/sdlp.hpp"
-#include <math/lp_solver.hpp>
+#include "toppra/clpwrapper.hpp"
+#include "toppra/sdlp.hpp"
+#include "toppra/math/lp_solver.hpp"
 
 // solve LP, linprog(f,A,b)
 // min f'x s.t. Ax<=b
 
-namespace rossy_utils {
+namespace toppra {
 
 double linprognd(const Eigen::VectorXd& f, const Eigen::MatrixXd& A,
                  const Eigen::VectorXd& b, Eigen::VectorXd& x) {
@@ -42,4 +42,4 @@ double linprog1d(const double& f, const Eigen::VectorXd& a,
   x = xv(0, 0);
   return ret;
 }
-}  // namespace rossy_utils
+}  // namespace toppra

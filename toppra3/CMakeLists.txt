@@ -43,38 +43,30 @@ FetchContent_Declare(backward
 )
 FetchContent_MakeAvailable(backward)
 
-add_subdirectory(rossy_utils)
-
-##=============================================================================
-## Add Subdirectory
-##=============================================================================
-set(ROSSY_UTILS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/include)
-set(YAML_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty/yaml/include)
-set(GOLDFARB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
-set(SDLP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
-set(CLP_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rossy_utils/thirdparty)
-
-
 include_directories(
-    ${ROSSY_UTILS_INCLUDE_DIR}
-    ${YAML_INCLUDE_DIR}
-    ${GOLDFARB_INCLUDE_DIR}
-    ${SDLP_INCLUDE_DIR}
-    ${CLP_INCLUDE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/toppra
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/toppra/math
+)
+
+
+# library files
+file(GLOB TOPPRA_CORE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/toppra/*.cpp")
+file(GLOB TOPPRA_MATH_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/toppra/math/*.cpp")
+set(TOPPRA_LIB_FILES
+    ${TOPPRA_CORE_SRC}
+    ${TOPPRA_MATH_SRC}
 )
 
 # Create the main library
 add_library(libtoppra3
-    src/toppra/topt_solver.cpp
-    src/toppra/trajectory_manager.cpp
+    ${TOPPRA_LIB_FILES}
 )
 
 # Set include directories for the main library
 target_include_directories(libtoppra3 PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${ROSSY_UTILS_INCLUDE_DIR}
     ${EIGEN3_INCLUDE_DIR}
 )
 
@@ -83,7 +75,7 @@ target_compile_features(libtoppra3 PUBLIC cxx_std_17)
 
 # Link dependencies
 target_link_libraries(libtoppra3 PUBLIC
-    Eigen3::Eigen rossy_utils ${libCoinUtils} ${libClp} Backward::Interface
+    Eigen3::Eigen ${libCoinUtils} ${libClp} Backward::Interface
 )
 
 # Add python bindings
@@ -94,14 +86,13 @@ pybind11_add_module(_toppra3
 # Link against required libraries
 target_link_libraries(_toppra3 PRIVATE
     libtoppra3
-    Eigen3::Eigen rossy_utils ${libCoinUtils} ${libClp}
+    Eigen3::Eigen ${libCoinUtils} ${libClp}
 )
 
 # Set include directories for Python module
 target_include_directories(_toppra3 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings
-    ${ROSSY_UTILS_INCLUDE_DIR}
 )
 
 add_custom_target(generate_stub ALL
@@ -118,7 +109,6 @@ add_custom_target(rename_pyi ALL
 )
 
 # Installation rules
-install(TARGETS rossy_utils LIBRARY DESTINATION toppra3/lib)
 install(TARGETS _toppra3 LIBRARY DESTINATION toppra3)
 install(DIRECTORY
     $<TARGET_FILE_DIR:_toppra3>/
@@ -134,11 +124,10 @@ add_executable(test_parameterization
 target_include_directories(test_parameterization PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${ROSSY_UTILS_INCLUDE_DIR}
     ${EIGEN3_INCLUDE_DIR}
 )
 
 # Link against the main library
 target_link_libraries(test_parameterization PRIVATE
-    libtoppra3 rossy_utils Backward::Interface
+    libtoppra3 Backward::Interface
 )

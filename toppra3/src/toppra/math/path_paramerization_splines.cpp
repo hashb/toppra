@@ -1,6 +1,5 @@
 #include "math/path_paramerization_splines.hpp"
 
-#include <io/io_utilities.hpp>
 
 TOPPSplines::TOPPSplines() {
   initialize();
@@ -108,7 +107,7 @@ void TOPPSplines::check() {
   std::cout << " ---TOPPSplines : total period = " << ts[n_wpts] << std::endl;
   // int i=0;
   // for(auto &t : ts){
-  //     rossy_utils::saveValue(t, "ts");
+  //     toppra::saveValue(t, "ts");
 
   //     double s = evaluate(t);
   //     std::cout<<"s("<<t<<") = "<<s<<", ";
@@ -122,10 +121,6 @@ void TOPPSplines::check() {
   //     std::cout<<"u["<<i<<"]="<<us[i]<<std::endl;
   //     i++;
   // }
-  rossy_utils::pretty_print(ts, "\nts");
-  rossy_utils::pretty_print(ss, "\nss");
-  rossy_utils::pretty_print(vs, "\nvs");
-  rossy_utils::pretty_print(us, "\nus");
 }
 
 double TOPPSplines::getPeroid() {

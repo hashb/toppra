@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "rossy_utils/general/clock.hpp"
-#include "rossy_utils/math/linear_interpolator.hpp"
+#include "toppra/clock.hpp"
+#include "toppra/math/linear_interpolator.hpp"
 #include "toppra/topt_solver.hpp"
 #include "toppra/trajectory_manager.hpp"
 #include "toppra/user_command.hpp"
@@ -59,9 +59,9 @@ class InputData {
 
   // Convert to SYSTEM_DATA format used internally
   SYSTEM_DATA toSystemData(std::shared_ptr<TrajectoryManager>& traj_manager) const {
-    rossy_utils::math::LinearInterpolator spl_velocity_scale_factors(traj_manager->s2q_times_, scale_factors[0]);
-    rossy_utils::math::LinearInterpolator spl_acceleration_scale_factors(traj_manager->s2q_times_, scale_factors[1]);
-    rossy_utils::math::LinearInterpolator spl_jerk_scale_factors(traj_manager->s2q_times_, scale_factors[2]);
+    toppra::math::LinearInterpolator spl_velocity_scale_factors(traj_manager->s2q_times_, scale_factors[0]);
+    toppra::math::LinearInterpolator spl_acceleration_scale_factors(traj_manager->s2q_times_, scale_factors[1]);
+    toppra::math::LinearInterpolator spl_jerk_scale_factors(traj_manager->s2q_times_, scale_factors[2]);
 
     Eigen::VectorXd max_joint_velocity_eigen = Eigen::Map<const Eigen::VectorXd>(max_joint_velocity.data(), max_joint_velocity.size());
     Eigen::VectorXd max_joint_acceleration_eigen = Eigen::Map<const Eigen::VectorXd>(max_joint_acceleration.data(), max_joint_acceleration.size());
@@ -201,7 +201,7 @@ class Toppra3Parameterization {
     std::cout << "Toppra3Parameterization::solve POSTPROCESSING 8 (" << clock.stop()
               << "ms)" << std::endl;
     clock.start();
-    rossy_utils::math::LinearInterpolator spl_segment_indicies_at_input_times(traj_manager_->s2q_times_, segment_indicies_as_double);
+    toppra::math::LinearInterpolator spl_segment_indicies_at_input_times(traj_manager_->s2q_times_, segment_indicies_as_double);
     std::vector<double> segment_indices_at_gridpoints;
     segment_indices_at_gridpoints.resize(traj_manager_->s2q_gridpoints_.size());
     for (int i = 0; i < traj_manager_->s2q_gridpoints_.size(); i++) {
@@ -210,7 +210,7 @@ class Toppra3Parameterization {
     std::cout << "Toppra3Parameterization::solve POSTPROCESSING 9 (" << clock.stop()
               << "ms)" << std::endl;
     clock.start();
-    rossy_utils::math::LinearInterpolator spl_segment_indicies_at_parameterized_times(traj_manager_->t2q_gridpoints_, segment_indices_at_gridpoints);
+    toppra::math::LinearInterpolator spl_segment_indicies_at_parameterized_times(traj_manager_->t2q_gridpoints_, segment_indices_at_gridpoints);
     std::cout << "Toppra3Parameterization::solve POSTPROCESSING 10 (" << clock.stop()
               << "ms)" << std::endl;
     clock.start();

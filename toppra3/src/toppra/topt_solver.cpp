@@ -10,14 +10,14 @@
     } \
 } while(0)
 
-#include "clp/clpwrapper.hpp"
+#include "toppra/clpwrapper.hpp"
 #include "toppra/topt_utils.hpp"
 #include "toppra/trajectory_manager.hpp"
-#include "rossy_utils/general/clock.hpp"
-#include "rossy_utils/math/math_utilities.hpp"
+#include "toppra/clock.hpp"
+#include "toppra/math/math_utilities.hpp"
 
 ToptSolver::ToptSolver(int dim) {
-  // rossy_utils::pretty_constructor(2, "ToptSolver");
+  // toppra::pretty_constructor(2, "ToptSolver");
   dim_ = dim;  // robot actuator dimension
   lpsolver_ = new LPSolver();
 
@@ -40,8 +40,8 @@ void ToptSolver::get1stlimit(int k, InequalData& constraints) {
   // -1*x[k] < -MIN_SDOT_
   // dimIneq1_ = dim_ +1
   Eigen::VectorXd A, b;
-  A = rossy_utils::vStack(sysdata_.av[k], -1.0);
-  b = rossy_utils::vStack(sysdata_.vm2[k], -MIN_SDOT_);
+  A = toppra::vStack(sysdata_.av[k], -1.0);
+  b = toppra::vStack(sysdata_.vm2[k], -MIN_SDOT_);
 
   constraints.A = A;
   constraints.b = b;
@@ -135,7 +135,7 @@ void ToptSolver::get3rdlimit(int k, const std::vector<double>& x0_list,
 
   Eigen::VectorXd temp;
   temp = sysdata_.jm[k] * hbar;
-  constraints.b = rossy_utils::vStack(temp, temp);
+  constraints.b = toppra::vStack(temp, temp);
 
   // std::cout<<constraints.b<<std::endl;
 
@@ -143,8 +143,8 @@ void ToptSolver::get3rdlimit(int k, const std::vector<double>& x0_list,
   // (-1/3-2r)x[k]+(-5/3-2/3*dsk/dskk-2(1-r))x[k+1]+2/3*(dsk/dskk)x[k+2] < 0
   // Eigen::MatrixXd Asp = Eigen::MatrixXd::Zero(1,3);
   //  Asp << (-1./3.), (-5./3.-2./3.*dsk/dskk), 2./3.*dsk/dskk;
-  // constraints.A = rossy_utils::vStack(constraints.A, Asp);
-  // constraints.b = rossy_utils::vStack(constraints.b, 0.);
+  // constraints.A = toppra::vStack(constraints.A, Asp);
+  // constraints.b = toppra::vStack(constraints.b, 0.);
 
   // add
   // -J < q'[k+1]/tstep * ( (x[k+2]-x[k+1])/dskk  - (x[k+1]-x[k])/dsk ) < J
@@ -153,11 +153,11 @@ void ToptSolver::get3rdlimit(int k, const std::vector<double>& x0_list,
   Asp << -1. / dsk, (1. / dskk + 1. / dsk), -(1. / dskk), 1. / dsk,
       -(1. / dskk + 1. / dsk), (1. / dskk);
   double dqdj =
-      rossy_utils::getMaxRatioValue(sysdata_.dq[k + 1], sysdata_.jm[k]);
+      toppra::getMaxRatioValue(sysdata_.dq[k + 1], sysdata_.jm[k]);
   double tstep = 0.02;
   Eigen::VectorXd bsp{{tstep / dqdj, tstep / dqdj}};
-  constraints.A = rossy_utils::vStack(constraints.A, Asp);
-  constraints.b = rossy_utils::vStack(constraints.b, bsp);
+  constraints.A = toppra::vStack(constraints.A, Asp);
+  constraints.b = toppra::vStack(constraints.b, bsp);
 }
 
 double ToptSolver::getFeasibleX(int k) {
@@ -174,7 +174,7 @@ double ToptSolver::getFeasibleX(int k) {
 
   // solve LP
   double xmax_c_k;
-  double ret = rossy_utils::linprog1d(-1, ax, b, xmax_c_k);
+  double ret = toppra::linprog1d(-1, ax, b, xmax_c_k);
   return xmax_c_k;
 }
 
@@ -198,10 +198,10 @@ double ToptSolver::getControllableX(int k, double xmax_c_kk) {
   // case1 : if x_kk is fixed:
   if (xmax_c_kk < MIN_SDOT_) {
     Eigen::VectorXd ax = cst1.A.col(0);
-    ax = rossy_utils::vStack(ax, cst2.A.col(0));
+    ax = toppra::vStack(ax, cst2.A.col(0));
     Eigen::VectorXd b = cst1.b;
-    b = rossy_utils::vStack(b, cst2.b - cst2.A.col(1) * xmax_c_kk);
-    double ret = rossy_utils::linprog1d(-1, ax, b, xmax_c_k);
+    b = toppra::vStack(b, cst2.b - cst2.A.col(1) * xmax_c_kk);
+    double ret = toppra::linprog1d(-1, ax, b, xmax_c_k);
     return xmax_c_k;
   }
 
@@ -211,19 +211,19 @@ double ToptSolver::getControllableX(int k, double xmax_c_kk) {
   Eigen::VectorXd ax = cst1.A.col(0);
   int colsize = cst1.A.rows();
   // 1nd limit: A[0]*x[k] + 0*x[k+1] < b
-  Ax = rossy_utils::hStack(ax, Eigen::VectorXd::Zero(colsize));
+  Ax = toppra::hStack(ax, Eigen::VectorXd::Zero(colsize));
   // 2nd limit: : A[0]*x[k] + A[1]*x[k+1] < b
-  Ax = rossy_utils::vStack(Ax, cst2.A);
-  b = rossy_utils::vStack(cst1.b, cst2.b);
+  Ax = toppra::vStack(Ax, cst2.A);
+  b = toppra::vStack(cst1.b, cst2.b);
   // bwd reachability:  x[k+1] < xmax_c_kk
   Eigen::MatrixXd Axtmp{{0., 1.}};
-  Ax = rossy_utils::vStack(Ax, Axtmp);
-  b = rossy_utils::vStack(b, xmax_c_kk);
+  Ax = toppra::vStack(Ax, Axtmp);
+  b = toppra::vStack(b, xmax_c_kk);
   // solve LP
   Eigen::VectorXd f2d{{-1, -1}};
   // Eigen::VectorXd f2d {{-1, 0}};
   Eigen::VectorXd soln;
-  double ret = rossy_utils::linprog2d(f2d, Ax, b, soln);
+  double ret = toppra::linprog2d(f2d, Ax, b, soln);
 
   // return soln[0];
 
@@ -246,10 +246,10 @@ double ToptSolver::getControllableX(int k, double xmax_c_kk) {
                 (double)(N - 1 - i) / (double)(N - 1) * given_xmax_c_kk;
 
       Eigen::VectorXd ax = cst1.A.col(0);
-      ax = rossy_utils::vStack(ax, cst2.A.col(0));
+      ax = toppra::vStack(ax, cst2.A.col(0));
       Eigen::VectorXd b = cst1.b;
-      b = rossy_utils::vStack(b, cst2.b - cst2.A.col(1) * xkk_tmp);
-      ret = rossy_utils::linprog1d(-1, ax, b, xmaxk_tmp);
+      b = toppra::vStack(b, cst2.b - cst2.A.col(1) * xkk_tmp);
+      ret = toppra::linprog1d(-1, ax, b, xmaxk_tmp);
       t = 1 / sqrt(xkk_tmp) + 1 / sqrt(xmaxk_tmp);
 
       if (t < mint) {
@@ -277,14 +277,14 @@ double ToptSolver::getReachableXMax(int k, double xmax_c_k,
   b = constraints.b - constraints.A.col(0) * xmax_r_kpre;
 
   // add next state controllable
-  ax = rossy_utils::vStack(ax, 1);
-  b = rossy_utils::vStack(b, xmax_c_k);
+  ax = toppra::vStack(ax, 1);
+  b = toppra::vStack(b, xmax_c_k);
 
-  ax = rossy_utils::vStack(ax, -1);
-  b = rossy_utils::vStack(b, -MIN_SDOT_);
+  ax = toppra::vStack(ax, -1);
+  b = toppra::vStack(b, -MIN_SDOT_);
 
   double xmax_r_k, ret;
-  ret = rossy_utils::linprog1d(-1, ax, b, xmax_r_k);
+  ret = toppra::linprog1d(-1, ax, b, xmax_r_k);
   return xmax_r_k;
 }
 
@@ -443,8 +443,8 @@ void ToptSolver::solveTOPP3(const std::vector<double>& x0_list, int i_c) {
   double alpha = 10.;  // trust region constant
   constraints = buildTOPP3Ineq(xprev_list, i_c, nh, alpha);
   for (auto& cst : constraints) {
-    A = rossy_utils::vStack(A, cst.A);
-    b = rossy_utils::vStack(b, cst.b);
+    A = toppra::vStack(A, cst.A);
+    b = toppra::vStack(b, cst.b);
   }
   // f = Eigen::VectorXd::Constant(nh, -1);
   f = getCostCoeffs(x0_list, i_c, nh);
@@ -582,13 +582,13 @@ void ToptSolver::updateTOPP3Ineq(const std::vector<double>& x0_list, int k,
     // (dq[0]/2/ds/ds)*x[1]^3/2 < Jm
     double ds = sysdata_.s[1] - sysdata_.s[0];
     Eigen::VectorXd dq0 = sysdata_.dq[0] / 2. / ds / ds;
-    double tmp = rossy_utils::getMaxRatioValue(dq0, sysdata_.jm[0]);
+    double tmp = toppra::getMaxRatioValue(dq0, sysdata_.jm[0]);
     // x[1] < (1/tmp)^2/3
     tmp = std::pow(1. / tmp, 2. / 3.);
     Eigen::MatrixXd Atmp = Eigen::MatrixXd::Zero(1, h);
     Atmp(0, 0) = 1.;
-    A3 = rossy_utils::vStack(A3, Atmp);
-    b3 = rossy_utils::vStack(b3, tmp);
+    A3 = toppra::vStack(A3, Atmp);
+    b3 = toppra::vStack(b3, tmp);
   }
   if (b_last_fixed) {
     // k+h+1 = N-1 : last element
@@ -597,13 +597,13 @@ void ToptSolver::updateTOPP3Ineq(const std::vector<double>& x0_list, int k,
     double ds = sysdata_.s[k + h + 1] - sysdata_.s[k + h];
     Eigen::VectorXd dq0 =
         (sysdata_.ddq[k + h] - sysdata_.dq[k + h] / 2. / ds) / ds;
-    double tmp = rossy_utils::getMaxRatioValue(dq0, sysdata_.jm[k + h + 1]);
+    double tmp = toppra::getMaxRatioValue(dq0, sysdata_.jm[k + h + 1]);
     // x[N-2] < (1/tmp)^2/3
     tmp = std::pow(1. / tmp, 2. / 3.);
     Eigen::MatrixXd Atmp = Eigen::MatrixXd::Zero(1, h);
     Atmp(0, h - 1) = 1.;
-    A3 = rossy_utils::vStack(A3, Atmp);
-    b3 = rossy_utils::vStack(b3, tmp);
+    A3 = toppra::vStack(A3, Atmp);
+    b3 = toppra::vStack(b3, tmp);
   }
   //
   if (alpha > 0.) {
@@ -615,9 +615,9 @@ void ToptSolver::updateTOPP3Ineq(const std::vector<double>& x0_list, int k,
       btmp(i) = x0_list[k + 1 + i] + r;
       btmp(h + i) = -x0_list[k + 1 + i] + r;
     }
-    Atmp = rossy_utils::vStack(Atmp, -Atmp);
-    A3 = rossy_utils::vStack(A3, Atmp);
-    b3 = rossy_utils::vStack(b3, btmp);
+    Atmp = toppra::vStack(Atmp, -Atmp);
+    A3 = toppra::vStack(A3, Atmp);
+    b3 = toppra::vStack(b3, btmp);
   }
 
   TOPP3Ineq[2].A = A3;
@@ -717,7 +717,6 @@ double ToptSolver::checkLimits(const std::vector<double>& x0_list) {
   for (int k(0); k < num_wpts; ++k) {
     // 1st - velocity : qdot = q'*sdot
     qdotk2 = sysdata_.dq[k].cwiseProduct(sysdata_.dq[k]) * x0_list[k];
-    rossy_utils::saveVector(qdotk2, "topt/qdotk2");
 
     // 2nd
     if (k == num_wpts - 1) {
@@ -732,7 +731,6 @@ double ToptSolver::checkLimits(const std::vector<double>& x0_list) {
 
     // 2nd - acceleration
     qddotk = sysdata_.ddq[k] * (x0_list[k]) + sysdata_.dq[k] * uk;
-    rossy_utils::saveVector(qddotk, "topt/qacc");
 
     // 3rd - jerk
     if (k == 0)
@@ -741,7 +739,6 @@ double ToptSolver::checkLimits(const std::vector<double>& x0_list) {
       qdddotk = -2. * qddotk_pre / dtk;
     else
       qdddotk = computeJerk(k - 1, x0_list);
-    rossy_utils::saveVector(qdddotk, "topt/jerk");
     // if(k==0) qddotk_pre = qddotk;
     // qdddotk = (qddotk - qddotk_pre)/dtk;
     qddotk_pre = qddotk;
@@ -749,8 +746,6 @@ double ToptSolver::checkLimits(const std::vector<double>& x0_list) {
     if (k < num_wpts - 1) duration += dtk;
   }
 
-  rossy_utils::pretty_print(check_limits, std::cout,
-                            "_sdot_dt_vel_acc_trq_jerk_grasp");
   TOPT_DEBUG_MSG("duration = " << duration << std::endl);
 
   return motion_in_limit;
