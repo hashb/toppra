@@ -283,7 +283,7 @@ void TrajectoryManager::redistQwptsPureNormDist(
   slist.push_back(s);
   for (int i(0); i < num_wpts - 1; i++) {
     delq = qwpts0[i + 1] - qwpts0[i];
-    s += delq.norm();
+    s += std::max(1e-5, delq.norm());
     slist.push_back(s);
   }
 

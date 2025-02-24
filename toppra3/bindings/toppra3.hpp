@@ -59,9 +59,13 @@ class InputData {
 
   // Convert to SYSTEM_DATA format used internally
   SYSTEM_DATA toSystemData(std::shared_ptr<TrajectoryManager>& traj_manager) const {
+    std::cout << ".";
     toppra::math::LinearInterpolator spl_velocity_scale_factors(traj_manager->s2q_times_, scale_factors[0]);
+    std::cout << ".";
     toppra::math::LinearInterpolator spl_acceleration_scale_factors(traj_manager->s2q_times_, scale_factors[1]);
+    std::cout << ".";
     toppra::math::LinearInterpolator spl_jerk_scale_factors(traj_manager->s2q_times_, scale_factors[2]);
+    std::cout << ".";
 
     Eigen::VectorXd max_joint_velocity_eigen = Eigen::Map<const Eigen::VectorXd>(max_joint_velocity.data(), max_joint_velocity.size());
     Eigen::VectorXd max_joint_acceleration_eigen = Eigen::Map<const Eigen::VectorXd>(max_joint_acceleration.data(), max_joint_acceleration.size());
@@ -77,7 +81,7 @@ class InputData {
       sysdata.s[i] = s;
       s += ds;
     }
-
+    std::cout << ".";
     // Set path waypoints
     for (int i = 0; i < n; i++) {
       s = sysdata.s[i];
@@ -93,7 +97,7 @@ class InputData {
       sysdata.am[i] = max_joint_acceleration_eigen * spl_acceleration_scale_factors.interpolate(s);
       sysdata.jm[i] = max_joint_jerk_eigen * spl_jerk_scale_factors.interpolate(s);
     }
-
+    std::cout << "|" << std::endl;
     return sysdata;
   }
 };
