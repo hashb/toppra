@@ -28,7 +28,6 @@ class SYSTEM_DATA {
     jm.resize(n);
     av.resize(n);
     vm2.resize(n);
-
   }
   int getsize() { return q.size(); }
 };

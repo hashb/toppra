@@ -4,8 +4,8 @@
 #include <iostream>
 #include <vector>
 
-#include "toppra/math/natural_spline_types.hpp"
 #include <Eigen/Dense>
+#include "toppra/math/natural_spline_types.hpp"
 
 class NaturalCubicSplines {
  public:

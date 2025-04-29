@@ -318,8 +318,7 @@ double NaturalCubicSplines::evaluateFirstDerivative(const double& t_in) {
     t2 = 0.;
     t1 = ts[i + 1] - ts[i] - t2;
   }
-  sdot = (zs[i + 1] * t1 * t1) / (2. * hs[i]) -
-         (zs[i] * t2 * t2) / (2. * hs[i]) +
+  sdot = (zs[i + 1] * t1 * t1) / (2. * hs[i]) - (zs[i] * t2 * t2) / (2. * hs[i]) +
          (ys[i + 1] / hs[i] - zs[i + 1] / 6. * hs[i]) -
          (ys[i] / hs[i] - zs[i] / 6. * hs[i]);
   return sdot;
@@ -362,9 +361,7 @@ int NaturalCubicSplines::evaluateTimeInterval(const double& t_in) {
 
 /// -----------------------------------------
 
-NCSpln4Vec::NCSpln4Vec() {
-  initialize(0);
-}
+NCSpln4Vec::NCSpln4Vec() { initialize(0); }
 
 void NCSpln4Vec::initialize(int _dim) {
   computed = false;
@@ -399,15 +396,13 @@ Eigen::VectorXd NCSpln4Vec::evaluate(const double& t_in) {
 
 Eigen::VectorXd NCSpln4Vec::evaluateFirstDerivative(const double& t_in) {
   output = Eigen::VectorXd::Zero(dim);
-  for (int i(0); i < dim; ++i)
-    output[i] = curves[i].evaluateFirstDerivative(t_in);
+  for (int i(0); i < dim; ++i) output[i] = curves[i].evaluateFirstDerivative(t_in);
   return output;
 }
 
 Eigen::VectorXd NCSpln4Vec::evaluateSecondDerivative(const double& t_in) {
   output = Eigen::VectorXd::Zero(dim);
-  for (int i(0); i < dim; ++i)
-    output[i] = curves[i].evaluateSecondDerivative(t_in);
+  for (int i(0); i < dim; ++i) output[i] = curves[i].evaluateSecondDerivative(t_in);
   return output;
 }
 
@@ -420,9 +415,7 @@ int NCSpln4Vec::evaluateTimeInterval(const double& t_in) {
 // 될까?
 // 확인해보기 S2
 
-NCSpln4Rot::NCSpln4Rot() {
-  initialize();
-}
+NCSpln4Rot::NCSpln4Rot() { initialize(); }
 
 void NCSpln4Rot::initialize() {
   initialized = true;
@@ -437,9 +430,7 @@ void NCSpln4Rot::push_back(double t, Eigen::Quaterniond q_ti) {
   Eigen::VectorXd delq_vec = delq_axis.axis() * delq_axis.angle();
   log_curves.push_back(t, delq_vec);
 }
-void NCSpln4Rot::compute() {
-  log_curves.compute();
-}
+void NCSpln4Rot::compute() { log_curves.compute(); }
 
 Eigen::Quaterniond NCSpln4Rot::evaluate(const double& t_in) {
   Eigen::VectorXd delq_vec = log_curves.evaluate(t_in);

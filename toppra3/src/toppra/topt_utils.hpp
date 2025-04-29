@@ -1,8 +1,8 @@
 #ifndef TOPT_UTILS_H
 #define TOPT_UTILS_H
 
-#include "toppra/user_command.hpp"
 #include "toppra/math/math_utilities.hpp"
+#include "toppra/user_command.hpp"
 
 namespace topt_utils {
 Eigen::MatrixXd hZeroStack(int Nl, const Eigen::MatrixXd& A) {

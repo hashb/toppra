@@ -4,17 +4,18 @@
 #define TOPT_DEBUG_PRINT 0
 #endif
 
-#define TOPT_DEBUG_MSG(msg) do { \
+#define TOPT_DEBUG_MSG(msg) \
+  do {                      \
     if (TOPT_DEBUG_PRINT) { \
-        std::cout << msg; \
-    } \
-} while(0)
+      std::cout << msg;     \
+    }                       \
+  } while (0)
 
+#include "toppra/clock.hpp"
 #include "toppra/clpwrapper.hpp"
+#include "toppra/math/math_utilities.hpp"
 #include "toppra/topt_utils.hpp"
 #include "toppra/trajectory_manager.hpp"
-#include "toppra/clock.hpp"
-#include "toppra/math/math_utilities.hpp"
 
 ToptSolver::ToptSolver(int dim) {
   // toppra::pretty_constructor(2, "ToptSolver");
@@ -25,11 +26,17 @@ ToptSolver::ToptSolver(int dim) {
   initializeDimensions();
 }
 
-void ToptSolver::initializeDimensions() {
+void ToptSolver::initializeDimensions()
+
+{
   //
   dimIneq1_ = dim_ + 1;
+  // cartesian velocity limits
+  dimIneq1_ += 3;
   //
-  dimIneq2_ = 4 * dim_;
+  dimIneq2_ = 8 * dim_;
+  // cartesian acceleration limits
+  dimIneq2_ += 12;
   //
   // dimIneq3_ = 2*dim_+1; // if spline condition added
   dimIneq3_ = 2 * dim_ + 2;  // if acc jump limit added
@@ -43,6 +50,14 @@ void ToptSolver::get1stlimit(int k, InequalData& constraints) {
   A = toppra::vStack(sysdata_.av[k], -1.0);
   b = toppra::vStack(sysdata_.vm2[k], -MIN_SDOT_);
 
+  if (lin_vel_check_activated_) {
+    double lv2max = sysdata_.lvm[k] * sysdata_.lvm[k];
+    Eigen::VectorXd lv2 = sysdata_.ee_v[k].cwiseProduct(sysdata_.ee_v[k]);
+    Eigen::VectorXd lv2max3 = Eigen::VectorXd::Constant(3, lv2max);
+
+    A = toppra::vStack(A, lv2);
+    b = toppra::vStack(b, lv2max3);
+  }
   constraints.A = A;
   constraints.b = b;
 }
@@ -87,8 +102,8 @@ void ToptSolver::get3rdlimit(int k, const std::vector<double>& x0_list,
   double dskk = sysdata_.s[k + 2] - sysdata_.s[k + 1];
   // std::cout<<"dsk="<<dsk<<", dskk="<<dskk<<std::endl;
   J0 = sysdata_.dq[k] / 2. / dsk - sysdata_.ddq[k];
-  J1 = -sysdata_.dq[k + 1] / 2. / dskk - sysdata_.dq[k] / 2. / dsk +
-       sysdata_.ddq[k + 1];
+  J1 =
+      -sysdata_.dq[k + 1] / 2. / dskk - sysdata_.dq[k] / 2. / dsk + sysdata_.ddq[k + 1];
   J2 = sysdata_.dq[k + 1] / 2. / dskk;
   // std::cout<<"J0="<<J0.transpose()<<", J1="<<J1.transpose()
   //             <<", J2="<<J2.transpose()<<std::endl;
@@ -103,21 +118,18 @@ void ToptSolver::get3rdlimit(int k, const std::vector<double>& x0_list,
   double hbar, dh0, dh1, dh2;
   if (k == 0) {
     dh0 = 0.;
-    dh1 =
-        (-dsk / (vk0 + vk1) / (vk0 + vk1) - dskk / (vk1 + vk2) / (vk1 + vk2)) *
-        0.5 / vk1;
+    dh1 = (-dsk / (vk0 + vk1) / (vk0 + vk1) - dskk / (vk1 + vk2) / (vk1 + vk2)) * 0.5 /
+          vk1;
     dh2 = -dskk / (vk1 + vk2) / (vk1 + vk2) * 0.5 / vk2;
   } else if (k == x0_list.size() - 3) {
     dh0 = -dsk / (vk0 + vk1) / (vk0 + vk1) * 0.5 / vk0;
-    dh1 =
-        -(dsk / (vk0 + vk1) / (vk0 + vk1) + dskk / (vk1 + vk2) / (vk1 + vk2)) *
-        0.5 / vk1;
+    dh1 = -(dsk / (vk0 + vk1) / (vk0 + vk1) + dskk / (vk1 + vk2) / (vk1 + vk2)) * 0.5 /
+          vk1;
     dh2 = 0.;
   } else {
     dh0 = -dsk / (vk0 + vk1) / (vk0 + vk1) * 0.5 / vk0;
-    dh1 =
-        -(dsk / (vk0 + vk1) / (vk0 + vk1) + dskk / (vk1 + vk2) / (vk1 + vk2)) *
-        0.5 / vk1;
+    dh1 = -(dsk / (vk0 + vk1) / (vk0 + vk1) + dskk / (vk1 + vk2) / (vk1 + vk2)) * 0.5 /
+          vk1;
     dh2 = -dskk / (vk1 + vk2) / (vk1 + vk2) * 0.5 / vk2;
   }
   hbar = dsk / (vk0 + vk1) + dskk / (vk1 + vk2);
@@ -152,8 +164,7 @@ void ToptSolver::get3rdlimit(int k, const std::vector<double>& x0_list,
   Eigen::MatrixXd Asp = Eigen::MatrixXd::Zero(2, 3);
   Asp << -1. / dsk, (1. / dskk + 1. / dsk), -(1. / dskk), 1. / dsk,
       -(1. / dskk + 1. / dsk), (1. / dskk);
-  double dqdj =
-      toppra::getMaxRatioValue(sysdata_.dq[k + 1], sysdata_.jm[k]);
+  double dqdj = toppra::getMaxRatioValue(sysdata_.dq[k + 1], sysdata_.jm[k]);
   double tstep = 0.02;
   Eigen::VectorXd bsp{{tstep / dqdj, tstep / dqdj}};
   constraints.A = toppra::vStack(constraints.A, Asp);
@@ -228,8 +239,8 @@ double ToptSolver::getControllableX(int k, double xmax_c_kk) {
   // return soln[0];
 
   // if solution looks ok
-  if (soln[0] > 2 * MIN_SDOT_ && soln[1] > 2 * MIN_SDOT_ &&
-      soln[0] * 10. > soln[1] && soln[1] * 10. > soln[0]) {
+  if (soln[0] > 2 * MIN_SDOT_ && soln[1] > 2 * MIN_SDOT_ && soln[0] * 10. > soln[1] &&
+      soln[1] * 10. > soln[0]) {
     xmax_c_k = soln[0];
     xmax_c_kk = soln[1];
     return xmax_c_k;
@@ -263,8 +274,7 @@ double ToptSolver::getControllableX(int k, double xmax_c_kk) {
   }
 }
 
-double ToptSolver::getReachableXMax(int k, double xmax_c_k,
-                                    double xmax_r_kpre) {
+double ToptSolver::getReachableXMax(int k, double xmax_c_k, double xmax_r_kpre) {
   // given x[k-1]
   // min -x[k]
   // s.t. ax1*x[k] < b-ax0*x[k-1]
@@ -454,8 +464,7 @@ void ToptSolver::solveTOPP3(const std::vector<double>& x0_list, int i_c) {
   double x_diff(0.), x_norm(0.), t_diff(1.);
   for (int k(1); k < nh + 1; k++) {
     x_norm += x(k - 1) * x(k - 1);
-    x_diff +=
-        (xprev_list[i_c + k] - x(k - 1)) * (xprev_list[i_c + k] - x(k - 1));
+    x_diff += (xprev_list[i_c + k] - x(k - 1)) * (xprev_list[i_c + k] - x(k - 1));
     xprev_list[i_c + k] = x(k - 1);
   }
   x_diff = sqrt(x_diff / x_norm);
@@ -465,8 +474,8 @@ void ToptSolver::solveTOPP3(const std::vector<double>& x0_list, int i_c) {
   topt = t;
   xopt_list = xprev_list;
   alpha = 1.0;
-  TOPT_DEBUG_MSG("x_diff = " << x_diff << ", t=" << t << ", topt=" << topt 
-                 << std::endl);
+  TOPT_DEBUG_MSG("x_diff = " << x_diff << ", t=" << t << ", topt=" << topt
+                             << std::endl);
 
   int iter = 0;
   while (++iter < 10 && x_diff > 1e-2 && t_diff > 0.01) {
@@ -483,8 +492,7 @@ void ToptSolver::solveTOPP3(const std::vector<double>& x0_list, int i_c) {
     x_diff = 0.;
     for (int k(1); k < nh + 1; k++) {
       x_norm += x(k - 1) * x(k - 1);
-      x_diff +=
-          (xprev_list[i_c + k] - x(k - 1)) * (xprev_list[i_c + k] - x(k - 1));
+      x_diff += (xprev_list[i_c + k] - x(k - 1)) * (xprev_list[i_c + k] - x(k - 1));
       xprev_list[i_c + k] = x(k - 1);
     }
     x_diff = sqrt(x_diff / x_norm);
@@ -504,8 +512,8 @@ void ToptSolver::solveTOPP3(const std::vector<double>& x0_list, int i_c) {
   trackable_xmax_ = xopt_list;
 }
 
-Eigen::VectorXd ToptSolver::getCostCoeffs(const std::vector<double>& x0_list,
-                                          int k, int h) {
+Eigen::VectorXd ToptSolver::getCostCoeffs(const std::vector<double>& x0_list, int k,
+                                          int h) {
   // min f'x, with opt vars : x=x[k+1]~x[k+h]
   Eigen::VectorXd f = Eigen::VectorXd::Constant(h, -1);
 
@@ -518,16 +526,13 @@ Eigen::VectorXd ToptSolver::getCostCoeffs(const std::vector<double>& x0_list,
     dsk0 = sysdata_.s[k + i + 2] - sysdata_.s[k + i + 1];
     dsk1 = sysdata_.s[k + i + 1] - sysdata_.s[k + i];
 
-    f[i] =
-        -(dsk0 / (xk0 + xk1) / (xk0 + xk1) + dsk1 / (xk2 + xk1) / (xk2 + xk1)) /
-        xk1;
+    f[i] = -(dsk0 / (xk0 + xk1) / (xk0 + xk1) + dsk1 / (xk2 + xk1) / (xk2 + xk1)) / xk1;
   }
   return f;
 }
 
-void ToptSolver::updateTOPP3Ineq(const std::vector<double>& x0_list, int k,
-                                 int h, InequalDataList& TOPP3Ineq,
-                                 double alpha) {
+void ToptSolver::updateTOPP3Ineq(const std::vector<double>& x0_list, int k, int h,
+                                 InequalDataList& TOPP3Ineq, double alpha) {
   // update 3rd order constraints for x[k+1]~x[k+h]
   InequalData cntrt_tmp;
 
@@ -595,8 +600,7 @@ void ToptSolver::updateTOPP3Ineq(const std::vector<double>& x0_list, int k,
     // qddot[N-2] / 0.5*dt[N-2] < jm
     // (ddq[N-2]-dq[N-2]/2/ds)/ds * x[N-2]^3/2 < jm
     double ds = sysdata_.s[k + h + 1] - sysdata_.s[k + h];
-    Eigen::VectorXd dq0 =
-        (sysdata_.ddq[k + h] - sysdata_.dq[k + h] / 2. / ds) / ds;
+    Eigen::VectorXd dq0 = (sysdata_.ddq[k + h] - sysdata_.dq[k + h] / 2. / ds) / ds;
     double tmp = toppra::getMaxRatioValue(dq0, sysdata_.jm[k + h + 1]);
     // x[N-2] < (1/tmp)^2/3
     tmp = std::pow(1. / tmp, 2. / 3.);
@@ -624,8 +628,8 @@ void ToptSolver::updateTOPP3Ineq(const std::vector<double>& x0_list, int k,
   TOPP3Ineq[2].b = b3;
 }
 
-InequalDataList ToptSolver::buildTOPP3Ineq(const std::vector<double>& x0_list,
-                                           int k, int h, double alpha) {
+InequalDataList ToptSolver::buildTOPP3Ineq(const std::vector<double>& x0_list, int k,
+                                           int h, double alpha) {
   // Build constraitns for x[k+1:k+h]
   InequalDataList result;
   InequalData cntrt_tmp;
@@ -679,8 +683,7 @@ InequalDataList ToptSolver::buildTOPP3Ineq(const std::vector<double>& x0_list,
 
 // check functions
 
-Eigen::VectorXd ToptSolver::computeJerk(int k,
-                                        const std::vector<double>& x0_list) {
+Eigen::VectorXd ToptSolver::computeJerk(int k, const std::vector<double>& x0_list) {
   // k: 0 ~ nwpts-2
   double dsk = sysdata_.s[k + 1] - sysdata_.s[k];
   double dskk = sysdata_.s[k + 2] - sysdata_.s[k + 1];
@@ -693,8 +696,8 @@ Eigen::VectorXd ToptSolver::computeJerk(int k,
 
   Eigen::VectorXd J0, J1, J2;
   J0 = sysdata_.dq[k] / 2. / dsk - sysdata_.ddq[k];
-  J1 = -sysdata_.dq[k + 1] / 2. / dskk - sysdata_.dq[k] / 2. / dsk +
-       sysdata_.ddq[k + 1];
+  J1 =
+      -sysdata_.dq[k + 1] / 2. / dskk - sysdata_.dq[k] / 2. / dsk + sysdata_.ddq[k + 1];
   J2 = sysdata_.dq[k + 1] / 2. / dskk;
 
   return (J0 * x0_list[k] + J1 * x0_list[k + 1] + J2 * x0_list[k + 2]) / t;

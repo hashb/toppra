@@ -1,5 +1,5 @@
-#include "toppra/user_command.hpp"
 #include "math/lp_solver.hpp"
+#include "toppra/user_command.hpp"
 
 class LPSolver;
 class TrajectoryManager;
@@ -62,8 +62,8 @@ class ToptSolver {
    * 3. If thirdorder=true, run TOPP3 to refine with jerk constraints
    * 4. Generate final time parameterization
    */
-  bool solve(const SYSTEM_DATA& sysdata,
-             TrajectoryManager* traj, bool thirdorder = true);
+  bool solve(const SYSTEM_DATA& sysdata, TrajectoryManager* traj,
+             bool thirdorder = true);
 
   /**
    * @brief Resolves trajectory from a given time point
@@ -74,8 +74,7 @@ class ToptSolver {
    * @param gripdata Updated gripper constraints
    * @param traj Trajectory manager to update
    */
-  void resolve(double planning_time,
-               TrajectoryManager* traj);
+  void resolve(double planning_time, TrajectoryManager* traj);
 
  private:
   /**
@@ -127,8 +126,7 @@ class ToptSolver {
    * @param x0_list Current velocity profile
    * @param constraints Output constraint matrices A, b
    */
-  void get3rdlimit(int k, const std::vector<double>& x0_list,
-                   InequalData& constraints);
+  void get3rdlimit(int k, const std::vector<double>& x0_list, InequalData& constraints);
 
   double getFeasibleX(int k);
   double getControllableX(int k, double xmax_c_kk);
@@ -140,7 +138,8 @@ class ToptSolver {
 
   void solveTOPPRA0();
   /**
-   * @brief Solves TOPPRA (Time-Optimal Path Parameterization with Reachability Analysis)
+   * @brief Solves TOPPRA (Time-Optimal Path Parameterization with Reachability
+   * Analysis)
    *
    * Implements a two-pass algorithm:
    * 1. Backward pass: Computes maximum controllable velocities
@@ -168,8 +167,8 @@ class ToptSolver {
    * @param alpha Trust region size
    * @return List of constraint matrices for each order
    */
-  InequalDataList buildTOPP3Ineq(const std::vector<double>& x0_list, int k,
-                                 int h, double alpha = 1.);
+  InequalDataList buildTOPP3Ineq(const std::vector<double>& x0_list, int k, int h,
+                                 double alpha = 1.);
   /**
    * @brief Updates third order constraints for TOPP3
    *
@@ -185,8 +184,7 @@ class ToptSolver {
    */
   void updateTOPP3Ineq(const std::vector<double>& x0_list, int k, int h,
                        InequalDataList& TOPP3Ineq, double alpha = 1.);
-  Eigen::VectorXd getCostCoeffs(const std::vector<double>& x0_list, int k,
-                                int h);
+  Eigen::VectorXd getCostCoeffs(const std::vector<double>& x0_list, int k, int h);
 
   // check functions
   double checkLimits(const std::vector<double>& x0_list);

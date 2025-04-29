@@ -1,9 +1,6 @@
 #include "math/path_paramerization_splines.hpp"
 
-
-TOPPSplines::TOPPSplines() {
-  initialize();
-}
+TOPPSplines::TOPPSplines() { initialize(); }
 
 void TOPPSplines::initialize() {
   computed = false;

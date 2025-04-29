@@ -13,8 +13,8 @@ double linprognd(const Eigen::VectorXd& f, const Eigen::MatrixXd& A,
 
 double linprog2d(const Eigen::VectorXd& f2d, const Eigen::MatrixXd& A,
                  const Eigen::VectorXd& b, Eigen::VectorXd& x2d);
-double linprog1d(const double& f, const Eigen::VectorXd& a,
-                 const Eigen::VectorXd& b, double& x);
+double linprog1d(const double& f, const Eigen::VectorXd& a, const Eigen::VectorXd& b,
+                 double& x);
 }  // namespace toppra
 
 // Example:

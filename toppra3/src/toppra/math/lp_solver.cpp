@@ -1,7 +1,7 @@
 
+#include "toppra/math/lp_solver.hpp"
 #include "toppra/clpwrapper.hpp"
 #include "toppra/sdlp.hpp"
-#include "toppra/math/lp_solver.hpp"
 
 // solve LP, linprog(f,A,b)
 // min f'x s.t. Ax<=b
@@ -30,8 +30,8 @@ double linprog2d(const Eigen::VectorXd& f2d, const Eigen::MatrixXd& A,
   return ret;
 }
 
-double linprog1d(const double& f, const Eigen::VectorXd& a,
-                 const Eigen::VectorXd& b, double& x) {
+double linprog1d(const double& f, const Eigen::VectorXd& a, const Eigen::VectorXd& b,
+                 double& x) {
   // assert()
   Eigen::Matrix<double, 1, 1> fv = Eigen::VectorXd::Constant(1, f);
   Eigen::Matrix<double, 1, 1> xv = Eigen::VectorXd::Zero(1);

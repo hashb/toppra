@@ -73,8 +73,7 @@ Eigen::MatrixXd dStack(const Eigen::MatrixXd& a, const Eigen::MatrixXd& b) {
   // diagonally stack a,b -> [a 0; 0 b]
   if (a.rows() == 0 || a.cols() == 0) return b;
   if (b.rows() == 0 || b.cols() == 0) return a;
-  Eigen::MatrixXd ab =
-      Eigen::MatrixXd::Zero(a.rows() + b.rows(), a.cols() + b.cols());
+  Eigen::MatrixXd ab = Eigen::MatrixXd::Zero(a.rows() + b.rows(), a.cols() + b.cols());
   ab << a, Eigen::MatrixXd::Zero(a.rows(), b.cols()),
       Eigen::MatrixXd::Zero(b.rows(), a.cols()), b;
   return ab;
@@ -98,8 +97,7 @@ Eigen::MatrixXd VectortoMatrix(const Eigen::VectorXd& a, int dim) {
   return mat;
 }
 
-Eigen::VectorXd vector2EigenVector(const std::vector<double>& vec, int k,
-                                   int l) {
+Eigen::VectorXd vector2EigenVector(const std::vector<double>& vec, int k, int l) {
   // from k, length l
   if (vec.size() < k + l) {
     l = vec.size() - k;
@@ -174,8 +172,7 @@ Eigen::MatrixXd deleteRow(const Eigen::MatrixXd& a_, int row_) {
 //     a.block(arow, acol, b.rows(), b.cols()) = b;
 // }
 
-double getMaxRatioValue(const Eigen::VectorXd& val,
-                        const Eigen::VectorXd& max) {
+double getMaxRatioValue(const Eigen::VectorXd& val, const Eigen::VectorXd& max) {
   assert(val.size() == max.size());
   double maxratio = 0.;
   for (int i(0); i < val.size(); ++i) {
@@ -204,8 +201,7 @@ Eigen::Vector3d convertQuatToEulerAngles(const Eigen::Quaterniond& q) {
   // pitch (y-axis rotation)
   double sinp = 2 * (w * y - z * x);
   if (std::abs(sinp) >= 1)
-    angles[1] =
-        std::copysign(M_PI / 2, sinp);  // use 90 degrees if out of range
+    angles[1] = std::copysign(M_PI / 2, sinp);  // use 90 degrees if out of range
   else
     angles[1] = std::asin(sinp);
 
@@ -234,16 +230,14 @@ void convertQuatDesToOriDes(const Eigen::Quaterniond& quat_in,
   ori_out[3] = quat_in.z();
 }
 
-void convertIsoToVec6d(const Eigen::Isometry3d& iso_in,
-                       Eigen::VectorXd& vec_out) {
+void convertIsoToVec6d(const Eigen::Isometry3d& iso_in, Eigen::VectorXd& vec_out) {
   // Vec6d = (w,v) in se(3):
   vec_out = Eigen::VectorXd::Zero(6);
   vec_out.tail(3) = iso_in.translation();
   Eigen::Quaterniond ori = Eigen::Quaternion<double>(iso_in.linear());
   vec_out.head(3) = convertQuatToExp(ori);
 }
-void convertIsoToVec7d(const Eigen::Isometry3d& iso_in,
-                       Eigen::VectorXd& vec_out) {
+void convertIsoToVec7d(const Eigen::Isometry3d& iso_in, Eigen::VectorXd& vec_out) {
   // Vec7d = (x,y,z, qw,qx,qy,qz) in R7
   vec_out = Eigen::VectorXd::Zero(7);
   vec_out.head(3) = iso_in.translation();
@@ -274,8 +268,8 @@ double smooth_changing_vel(double ini, double end, double moving_duration,
 double smooth_changing_acc(double ini, double end, double moving_duration,
                            double curr_time) {
   double ret;
-  ret = (end - ini) * 0.5 * (M_PI / moving_duration) *
-        (M_PI / moving_duration) * cos(curr_time / moving_duration * M_PI);
+  ret = (end - ini) * 0.5 * (M_PI / moving_duration) * (M_PI / moving_duration) *
+        cos(curr_time / moving_duration * M_PI);
   if (curr_time > moving_duration) {
     ret = 0.0;
   }
@@ -294,17 +288,15 @@ double smoothing(double ini, double fin, double rat) {
 }
 
 void getSinusoidTrajectory(double initTime_, const Eigen::VectorXd& midPoint_,
-                           const Eigen::VectorXd& amp_,
-                           const Eigen::VectorXd& freq_, double evalTime_,
-                           Eigen::VectorXd& p_, Eigen::VectorXd& v_,
+                           const Eigen::VectorXd& amp_, const Eigen::VectorXd& freq_,
+                           double evalTime_, Eigen::VectorXd& p_, Eigen::VectorXd& v_,
                            Eigen::VectorXd& a_) {
   int dim = midPoint_.size();
   p_ = Eigen::VectorXd::Zero(dim);
   v_ = Eigen::VectorXd::Zero(dim);
   a_ = Eigen::VectorXd::Zero(dim);
   for (int i = 0; i < dim; ++i) {
-    p_[i] = amp_[i] * sin(2 * M_PI * freq_[i] * (evalTime_ - initTime_)) +
-            midPoint_[i];
+    p_[i] = amp_[i] * sin(2 * M_PI * freq_[i] * (evalTime_ - initTime_)) + midPoint_[i];
     v_[i] = amp_[i] * 2 * M_PI * freq_[i] *
             cos(2 * M_PI * freq_[i] * (evalTime_ - initTime_));
     a_[i] = -amp_[i] * 2 * M_PI * freq_[i] * 2 * M_PI * freq_[i] *
@@ -345,8 +337,8 @@ bool isInBoundingBox(const Eigen::VectorXd& val, const Eigen::VectorXd& lb,
   return ret;
 }
 
-Eigen::VectorXd eulerIntegration(const Eigen::VectorXd& x,
-                                 const Eigen::VectorXd& xdot, double dt) {
+Eigen::VectorXd eulerIntegration(const Eigen::VectorXd& x, const Eigen::VectorXd& xdot,
+                                 double dt) {
   Eigen::VectorXd ret = x;
   ret += xdot * dt;
   return ret;

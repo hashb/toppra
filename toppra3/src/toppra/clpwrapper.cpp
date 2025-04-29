@@ -13,9 +13,7 @@ LPSolver::LPSolver() {
   model_->setLogLevel(0);
 }
 
-LPSolver::~LPSolver() {
-  delete model_;
-}
+LPSolver::~LPSolver() { delete model_; }
 
 double LPSolver::solve(const Eigen::VectorXd& f, const Eigen::MatrixXd& A,
                        const Eigen::VectorXd& lb, const Eigen::VectorXd& ub,
