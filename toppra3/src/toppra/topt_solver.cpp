@@ -48,14 +48,12 @@ void ToptSolver::get1stlimit(int k, InequalData& constraints) {
   A = toppra::vStack(sysdata_.av[k], -1.0);
   b = toppra::vStack(sysdata_.vm2[k], -MIN_SDOT_);
 
-  if (lin_vel_check_activated_) {
-    double lv2max = sysdata_.lvm[k] * sysdata_.lvm[k];
-    Eigen::VectorXd lv2 = sysdata_.ee_v[k].cwiseProduct(sysdata_.ee_v[k]);
-    Eigen::VectorXd lv2max3 = Eigen::VectorXd::Constant(3, lv2max);
+  double lv2max = sysdata_.lvm[k] * sysdata_.lvm[k];
+  Eigen::VectorXd lv2 = sysdata_.ee_v[k].cwiseProduct(sysdata_.ee_v[k]);
+  Eigen::VectorXd lv2max3 = Eigen::VectorXd::Constant(3, lv2max);
 
-    A = toppra::vStack(A, lv2);
-    b = toppra::vStack(b, lv2max3);
-  }
+  A = toppra::vStack(A, lv2);
+  b = toppra::vStack(b, lv2max3);
   constraints.A = A;
   constraints.b = b;
 }
@@ -63,33 +61,86 @@ void ToptSolver::get1stlimit(int k, InequalData& constraints) {
 void ToptSolver::get2ndlimit(int k, InequalData& constraints) {
   // A*[ x[k]; x[k+1] ] < b
   // dimIneq2_ = 4*dim_(trq) + 4*dim_(acc)
-  constraints.A = Eigen::MatrixXd::Zero(4 * dim_, 2);
-  constraints.b = Eigen::VectorXd::Zero(4 * dim_);
+  constraints.A = Eigen::MatrixXd::Zero(8 * dim_, 2);
+  constraints.b = Eigen::VectorXd::Zero(8 * dim_);
+
+  // torque limit
+  // 1) - tm[k] - g[k] <
+  //   m[k]/2ds[k]*x[k+1] + (b[k]-m[k]/2ds[k])*x[k]
+  //                                 < tm[k] - g[k]
+  Eigen::VectorXd ak1 =
+      sysdata_.m[k] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
+  Eigen::VectorXd ak0 = sysdata_.b[k] - ak1;
+  constraints.A.block(0, 0, dim_, 1) = ak0;
+  constraints.A.block(0, 1, dim_, 1) = ak1;
+  constraints.b.segment(0, dim_) = sysdata_.tm[k] - sysdata_.g[k];
+  constraints.A.block(dim_, 0, dim_, 1) = -ak0;
+  constraints.A.block(dim_, 1, dim_, 1) = -ak1;
+  constraints.b.segment(dim_, dim_) = sysdata_.tm[k] + sysdata_.g[k];
+  // 2) - tm[k+1] - g[k+1] <
+  //   (b[k+1]+m[k+1]/2ds[k])*x[k+1] -m[k+1]/2ds[k]*x[k]
+  //                                 < tm[k+1] - g[k+1]
+  ak0 = -sysdata_.m[k + 1] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
+  ak1 = sysdata_.b[k + 1] - ak0;
+  constraints.A.block(2 * dim_, 0, dim_, 1) = ak0;
+  constraints.A.block(2 * dim_, 1, dim_, 1) = ak1;
+  constraints.b.segment(2 * dim_, dim_) =
+      sysdata_.tm[k + 1] - sysdata_.g[k + 1];
+  constraints.A.block(3 * dim_, 0, dim_, 1) = -ak0;
+  constraints.A.block(3 * dim_, 1, dim_, 1) = -ak1;
+  constraints.b.segment(3 * dim_, dim_) =
+      sysdata_.tm[k + 1] + sysdata_.g[k + 1];
 
   // acceleration limit
   // 1) -am[k] <
   //  dq[k]/2ds[k] x[k+1] + (ddq[k]-dq[k]/2ds) x[k]
   //                                        < am[k]
-  Eigen::VectorXd ak1 =
-      sysdata_.dq[k] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
-  Eigen::VectorXd ak0 = sysdata_.ddq[k] - ak1;
-  constraints.A.block(0 * dim_, 0, dim_, 1) = ak0;
-  constraints.A.block(0 * dim_, 1, dim_, 1) = ak1;
-  constraints.b.segment(0 * dim_, dim_) = sysdata_.am[k];
-  constraints.A.block(1 * dim_, 0, dim_, 1) = -ak0;
-  constraints.A.block(1 * dim_, 1, dim_, 1) = -ak1;
-  constraints.b.segment(1 * dim_, dim_) = sysdata_.am[k];
+  ak1 = sysdata_.dq[k] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
+  ak0 = sysdata_.ddq[k] - ak1;
+  constraints.A.block(4 * dim_, 0, dim_, 1) = ak0;
+  constraints.A.block(4 * dim_, 1, dim_, 1) = ak1;
+  constraints.b.segment(4 * dim_, dim_) = sysdata_.am[k];
+  constraints.A.block(5 * dim_, 0, dim_, 1) = -ak0;
+  constraints.A.block(5 * dim_, 1, dim_, 1) = -ak1;
+  constraints.b.segment(5 * dim_, dim_) = sysdata_.am[k];
   // 2) -am[k+1] <
   // ( ddq[k+1] + dq[k+1]/2ds[k] ) x[k+1] - (dq[k+1]/2ds) x[k]
   //                                        < am[k+1]
   ak0 = -sysdata_.dq[k + 1] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
   ak1 = sysdata_.ddq[k + 1] - ak0;
-  constraints.A.block(2 * dim_, 0, dim_, 1) = ak0;
-  constraints.A.block(2 * dim_, 1, dim_, 1) = ak1;
-  constraints.b.segment(2 * dim_, dim_) = sysdata_.am[k + 1];
-  constraints.A.block(3 * dim_, 0, dim_, 1) = -ak0;
-  constraints.A.block(3 * dim_, 1, dim_, 1) = -ak1;
-  constraints.b.segment(3 * dim_, dim_) = sysdata_.am[k + 1];
+  constraints.A.block(6 * dim_, 0, dim_, 1) = ak0;
+  constraints.A.block(6 * dim_, 1, dim_, 1) = ak1;
+  constraints.b.segment(6 * dim_, dim_) = sysdata_.am[k + 1];
+  constraints.A.block(7 * dim_, 0, dim_, 1) = -ak0;
+  constraints.A.block(7 * dim_, 1, dim_, 1) = -ak1;
+  constraints.b.segment(7 * dim_, dim_) = sysdata_.am[k + 1];
+
+  // linear accleration limit
+  Eigen::MatrixXd A = Eigen::MatrixXd::Zero(12, 2);
+  Eigen::VectorXd b = Eigen::VectorXd::Zero(12);
+
+  // 1) a = ee_a[k]*x[k]  + ee_v[k]*(x[k+1]-x[k])/2ds
+  // -lam[k] < ee_v[k]/2ds x[k+1] + (ee_a[k]-ee_v[k]/2ds) x[k] < lam[k]
+  ak1 = sysdata_.ee_v[k] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
+  ak0 = sysdata_.ee_a[k] - ak1;
+  A.block(0, 0, 3, 1) = ak0;
+  A.block(0, 1, 3, 1) = ak1;
+  A.block(3, 0, 3, 1) = -ak0;
+  A.block(3, 1, 3, 1) = -ak1;
+  b.head(6) = Eigen::VectorXd::Constant(6, sysdata_.lam[k]);
+  // 2) a = ee_a[k]*x[k+1]  + ee_v[k]*(x[k+1]-x[k])/2ds
+  // -lam[k+1] < (ee_a[k+1]+ee_v[k+1]/2ds )x[k+1] - ee_v[k+1]/2ds x[k] <
+  // lam[k+1]
+  ak0 = -sysdata_.ee_v[k + 1] / 2. / (sysdata_.s[k + 1] - sysdata_.s[k]);
+  ak1 = sysdata_.ee_a[k + 1] - ak0;
+  A.block(6, 0, 3, 1) = ak0;
+  A.block(6, 1, 3, 1) = ak1;
+  A.block(9, 0, 3, 1) = -ak0;
+  A.block(9, 1, 3, 1) = -ak1;
+  b.tail(6) = Eigen::VectorXd::Constant(6, sysdata_.lam[k + 1]);
+
+  constraints.A = toppra::vStack(constraints.A, A);
+  constraints.b = toppra::vStack(constraints.b, b);
 }
 
 void ToptSolver::get3rdlimit(int k, const std::vector<double>& x0_list,
