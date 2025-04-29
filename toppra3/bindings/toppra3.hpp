@@ -32,14 +32,44 @@ class InputData {
             std::vector<double> max_joint_jerk,
             std::vector<int> segment_indices,
             std::vector<std::vector<double>> scale_factors,
-            std::vector<std::vector<double>> waypoints)
+            std::vector<std::vector<double>> q,
+            std::vector<std::vector<double>> dq,
+            std::vector<std::vector<double>> ddq,
+            std::vector<std::vector<double>> m,
+            std::vector<std::vector<double>> b,
+            std::vector<std::vector<double>> g,
+            std::vector<std::vector<double>> av,
+            std::vector<std::vector<double>> vm2,
+            std::vector<std::vector<double>> tm,
+            std::vector<std::vector<double>> am,
+            std::vector<std::vector<double>> jm,
+            std::vector<std::vector<double>> frame_pos,
+            std::vector<std::vector<double>> frame_vel,
+            std::vector<std::vector<double>> frame_acc,
+            std::vector<std::vector<double>> frame_vel_limit,
+            std::vector<std::vector<double>> frame_acc_limit)
       : num_joints_(num_joints),
         max_joint_velocity(max_joint_velocity),
         max_joint_acceleration(max_joint_acceleration),
         max_joint_jerk(max_joint_jerk),
         segment_indices(segment_indices),
         scale_factors(scale_factors),
-        waypoints(waypoints) {}
+        q(q),
+        dq(dq),
+        ddq(ddq),
+        m(m),
+        b(b),
+        g(g),
+        av(av),
+        vm2(vm2),
+        tm(tm),
+        am(am),
+        jm(jm),
+        frame_pos(frame_pos),
+        frame_vel(frame_vel),
+        frame_acc(frame_acc),
+        frame_vel_limit(frame_vel_limit),
+        frame_acc_limit(frame_acc_limit) {}
 
   // dims
   int num_joints_;
@@ -53,7 +83,25 @@ class InputData {
   std::vector<int> segment_indices;
 
   // waypoints
-  std::vector<std::vector<double>> waypoints;
+  std::vector<std::vector<double>> q;
+  std::vector<std::vector<double>> dq;
+  std::vector<std::vector<double>> ddq;
+  std::vector<std::vector<double>> m;
+  std::vector<std::vector<double>> b;
+  std::vector<std::vector<double>> g;
+  std::vector<std::vector<double>> av;
+
+  std::vector<std::vector<double>> vm2;
+  std::vector<std::vector<double>> tm;
+  std::vector<std::vector<double>> am;
+  std::vector<std::vector<double>> jm;
+
+  std::vector<std::vector<double>> frame_pos;
+  std::vector<std::vector<double>> frame_vel;
+  std::vector<std::vector<double>> frame_acc;
+
+  std::vector<std::vector<double>> frame_vel_limit;
+  std::vector<std::vector<double>> frame_acc_limit;
 
   // scale factors
   std::vector<std::vector<double>> scale_factors;

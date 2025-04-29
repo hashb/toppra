@@ -32,7 +32,11 @@ PYBIND11_MODULE(_toppra3, m) {
            py::arg("num_joints"), py::arg("max_joint_velocity"),
            py::arg("max_joint_acceleration"), py::arg("max_joint_jerk"),
            py::arg("segment_indices"), py::arg("scale_factors"),
-           py::arg("waypoints"))
+           py::arg("q"), py::arg("dq"), py::arg("ddq"),
+           py::arg("m"), py::arg("b"), py::arg("g"), py::arg("av"),
+           py::arg("vm2"), py::arg("tm"), py::arg("am"), py::arg("jm"),
+           py::arg("frame_pos"), py::arg("frame_vel"), py::arg("frame_acc"),
+           py::arg("frame_vel_limit"), py::arg("frame_acc_limit"))
       .def_readwrite("num_joints_", &toppra3::InputData::num_joints_)
       .def_readwrite("max_joint_velocity",
                      &toppra3::InputData::max_joint_velocity)
