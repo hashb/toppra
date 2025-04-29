@@ -26,9 +26,7 @@ ToptSolver::ToptSolver(int dim) {
   initializeDimensions();
 }
 
-void ToptSolver::initializeDimensions()
-
-{
+void ToptSolver::initializeDimensions() {
   //
   dimIneq1_ = dim_ + 1;
   // cartesian velocity limits
