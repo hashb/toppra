@@ -51,13 +51,6 @@ class SYSTEM_DATA {
     ee_v.resize(n);
     ee_a.resize(n);
 
-    ee_w.resize(n);
-    ee_aw1.resize(n);
-    ee_aw2.resize(n);
-    ee_av1.resize(n);
-    ee_av2.resize(n);
-    ee_grav.resize(n);
-
     lvm.resize(n);
     lam.resize(n);
   }
