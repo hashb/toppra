@@ -2,7 +2,6 @@
 #include <math.h>
 
 #include <algorithm>
-
 #include <math/natural_cubic_splines.hpp>
 
 NaturalCubicSplines::NaturalCubicSplines() {
@@ -318,7 +317,8 @@ double NaturalCubicSplines::evaluateFirstDerivative(const double& t_in) {
     t2 = 0.;
     t1 = ts[i + 1] - ts[i] - t2;
   }
-  sdot = (zs[i + 1] * t1 * t1) / (2. * hs[i]) - (zs[i] * t2 * t2) / (2. * hs[i]) +
+  sdot = (zs[i + 1] * t1 * t1) / (2. * hs[i]) -
+         (zs[i] * t2 * t2) / (2. * hs[i]) +
          (ys[i + 1] / hs[i] - zs[i + 1] / 6. * hs[i]) -
          (ys[i] / hs[i] - zs[i] / 6. * hs[i]);
   return sdot;
@@ -396,13 +396,15 @@ Eigen::VectorXd NCSpln4Vec::evaluate(const double& t_in) {
 
 Eigen::VectorXd NCSpln4Vec::evaluateFirstDerivative(const double& t_in) {
   output = Eigen::VectorXd::Zero(dim);
-  for (int i(0); i < dim; ++i) output[i] = curves[i].evaluateFirstDerivative(t_in);
+  for (int i(0); i < dim; ++i)
+    output[i] = curves[i].evaluateFirstDerivative(t_in);
   return output;
 }
 
 Eigen::VectorXd NCSpln4Vec::evaluateSecondDerivative(const double& t_in) {
   output = Eigen::VectorXd::Zero(dim);
-  for (int i(0); i < dim; ++i) output[i] = curves[i].evaluateSecondDerivative(t_in);
+  for (int i(0); i < dim; ++i)
+    output[i] = curves[i].evaluateSecondDerivative(t_in);
   return output;
 }
 

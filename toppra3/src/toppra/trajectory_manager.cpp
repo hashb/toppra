@@ -6,8 +6,9 @@ TrajectoryManager::TrajectoryManager() {
   use_t2s_ = false;
 }
 
-void TrajectoryManager::setS2QSpline(const std::vector<double>& s_list,
-                                     const std::vector<Eigen::VectorXd>& qwpts) {
+void TrajectoryManager::setS2QSpline(
+    const std::vector<double>& s_list,
+    const std::vector<Eigen::VectorXd>& qwpts) {
   int num_wpts = qwpts.size();
   double send = s_list[num_wpts - 1];
   double s = 0.;
@@ -23,7 +24,8 @@ void TrajectoryManager::setS2QSpline(const std::vector<double>& s_list,
   checkSplines();
 }
 
-void TrajectoryManager::setS2QSpline(const std::vector<Eigen::VectorXd>& qwpts) {
+void TrajectoryManager::setS2QSpline(
+    const std::vector<Eigen::VectorXd>& qwpts) {
   int num_wpts = qwpts.size();
   double ds = 1 / ((double)(num_wpts - 1));
   double s = 0.;
@@ -255,8 +257,9 @@ void TrajectoryManager::getCommand(double t, Eigen::VectorXd& q_cmd,
 /**
  * Redistributes waypoints based on pure normalized distance
  *
- * This function takes a set of waypoints and redistributes them uniformly based on
- * the cumulative Euclidean distance between consecutive points. The process is:
+ * This function takes a set of waypoints and redistributes them uniformly based
+ * on the cumulative Euclidean distance between consecutive points. The process
+ * is:
  *
  * 1. Calculate cumulative distances between waypoints and normalize to [0,1]
  * 2. Create a spline mapping normalized distance to waypoint configurations
@@ -268,7 +271,8 @@ void TrajectoryManager::getCommand(double t, Eigen::VectorXd& q_cmd,
  * @param qwpts Output redistributed waypoint sequence
  */
 void TrajectoryManager::redistQwptsPureNormDist(
-    const std::vector<Eigen::VectorXd>& qwpts0, std::vector<Eigen::VectorXd>& qwpts) {
+    const std::vector<Eigen::VectorXd>& qwpts0,
+    std::vector<Eigen::VectorXd>& qwpts) {
   // Get number of input waypoints
   int num_wpts = qwpts0.size();
 
@@ -317,8 +321,9 @@ void TrajectoryManager::redistQwptsPureNormDist(
   }
 }
 
-void TrajectoryManager::redistQwptsNormDist(const std::vector<Eigen::VectorXd>& qwpts0,
-                                            std::vector<Eigen::VectorXd>& qwpts) {
+void TrajectoryManager::redistQwptsNormDist(
+    const std::vector<Eigen::VectorXd>& qwpts0,
+    std::vector<Eigen::VectorXd>& qwpts) {
   int num_wpts = qwpts0.size();
   double s(0.);
   Eigen::VectorXd delq;
@@ -363,9 +368,9 @@ void TrajectoryManager::redistQwptsNormDist(const std::vector<Eigen::VectorXd>& 
   }
 }
 
-void TrajectoryManager::redistQwpts1st(const std::vector<Eigen::VectorXd>& qwpts0,
-                                       const Eigen::VectorXd& qvelmax,
-                                       std::vector<Eigen::VectorXd>& qwpts) {
+void TrajectoryManager::redistQwpts1st(
+    const std::vector<Eigen::VectorXd>& qwpts0, const Eigen::VectorXd& qvelmax,
+    std::vector<Eigen::VectorXd>& qwpts) {
   int num_wpts = qwpts0.size();
   Eigen::VectorXd dq, qvelmaxinv;
   qvelmaxinv = qvelmax.cwiseInverse();
@@ -422,7 +427,8 @@ void TrajectoryManager::redistQwpts2nd(std::vector<Eigen::VectorXd>& qwpts) {
     if (i < ts_size - 1) {
       int d = (int)((ts_[i + 1] - ts_[i]) / tstep);
       for (int di(0); di < d; di++) {
-        t = ts_[i] + (((double)(di + 1) / (double)(d + 1))) * (ts_[i + 1] - ts_[i]);
+        t = ts_[i] +
+            (((double)(di + 1) / (double)(d + 1))) * (ts_[i + 1] - ts_[i]);
         q_cmd = spline_t2q_.evaluate(t);
         qwpts.push_back(q_cmd);
         ts_new.push_back(t);
@@ -443,7 +449,8 @@ void TrajectoryManager::redistQwpts2nd(std::vector<Eigen::VectorXd>& qwpts) {
   }
 }
 
-void TrajectoryManager::redistQwptsCritical(std::vector<Eigen::VectorXd>& qwpts) {
+void TrajectoryManager::redistQwptsCritical(
+    std::vector<Eigen::VectorXd>& qwpts) {
   // Assume T2Q spline is set
   // add points around max vel/acc/jerk
 

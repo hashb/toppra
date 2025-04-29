@@ -26,10 +26,9 @@
 #ifndef SDLP_HPP
 #define SDLP_HPP
 
+#include <Eigen/Eigen>
 #include <cmath>
 #include <random>
-
-#include <Eigen/Eigen>
 
 namespace sdlp {
 constexpr double eps = 1.0e-12;
@@ -279,13 +278,14 @@ inline int wedge(const double (*halves)[2], const int m, int* next, int* prev,
 }
 
 /* return the minimum on the projective line */
-inline int lp_base_case(const double (*halves)[2], /* halves --- half lines */
-                        const int m,               /* m      --- terminal marker */
-                        const double n_vec[2],     /* n_vec  --- numerator funciton */
-                        const double d_vec[2],     /* d_vec  --- denominator function */
-                        double opt[2],             /* opt    --- optimum  */
-                        int* next, /* next, prev  --- double linked list of indices */
-                        int* prev) {
+inline int lp_base_case(
+    const double (*halves)[2], /* halves --- half lines */
+    const int m,               /* m      --- terminal marker */
+    const double n_vec[2],     /* n_vec  --- numerator funciton */
+    const double d_vec[2],     /* d_vec  --- denominator function */
+    double opt[2],             /* opt    --- optimum  */
+    int* next, /* next, prev  --- double linked list of indices */
+    int* prev) {
   double cw_vec[2], ccw_vec[2];
   bool degen;
   int status;
@@ -303,7 +303,8 @@ inline int lp_base_case(const double (*halves)[2], /* halves --- half lines */
   }
 
   if (std::fabs(cross2(n_vec, d_vec)) < 2.0 * eps * eps) {
-    if (dot2(n_vec, n_vec) < 2.0 * eps * eps || dot2(d_vec, d_vec) > 2.0 * eps * eps) {
+    if (dot2(n_vec, n_vec) < 2.0 * eps * eps ||
+        dot2(d_vec, d_vec) > 2.0 * eps * eps) {
       /* numerator is zero or numerator and denominator are linearly dependent
        */
       opt[0] = cw_vec[0];
@@ -312,7 +313,8 @@ inline int lp_base_case(const double (*halves)[2], /* halves --- half lines */
     } else {
       /* numerator is non-zero and denominator is zero minimize linear
        * functional on circle */
-      if (!degen && cross2(cw_vec, n_vec) <= 0.0 && cross2(n_vec, ccw_vec) <= 0.0) {
+      if (!degen && cross2(cw_vec, n_vec) <= 0.0 &&
+          cross2(n_vec, ccw_vec) <= 0.0) {
         /* optimum is in interior of feasible region */
         opt[0] = -n_vec[0];
         opt[1] = -n_vec[1];
@@ -350,8 +352,8 @@ inline void findimax(const double* pln, int* imax) {
 }
 
 template <int d>
-inline void vector_up(const double* equation, const int ivar, const double* low_vector,
-                      double* vector) {
+inline void vector_up(const double* equation, const int ivar,
+                      const double* low_vector, double* vector) {
   vector[ivar] = 0.0;
   for (int i = 0; i <= d; i++) {
     if (i != ivar) {
@@ -364,8 +366,8 @@ inline void vector_up(const double* equation, const int ivar, const double* low_
 }
 
 template <int d>
-inline void vector_down(const double* elim_eqn, const int ivar, const double* old_vec,
-                        double* new_vec) {
+inline void vector_down(const double* elim_eqn, const int ivar,
+                        const double* old_vec, double* new_vec) {
   double ve = 0.0;
   double ee = 0.0;
   for (int i = 0; i <= d; i++) {
@@ -381,8 +383,8 @@ inline void vector_down(const double* elim_eqn, const int ivar, const double* ol
 }
 
 template <int d>
-inline void plane_down(const double* elim_eqn, const int ivar, const double* old_plane,
-                       double* new_plane) {
+inline void plane_down(const double* elim_eqn, const int ivar,
+                       const double* old_plane, double* new_plane) {
   const double crit = old_plane[ivar] / elim_eqn[ivar];
   for (int i = 0; i <= d; i++) {
     if (i != ivar) {
@@ -392,15 +394,16 @@ inline void plane_down(const double* elim_eqn, const int ivar, const double* old
 }
 
 template <int d>
-inline int linfracprog(const double* halves, /* halves  --- half spaces */
-                       const int max_size,   /* max_size --- size of halves array */
-                       const int m,          /* m       --- terminal marker */
-                       const double* n_vec,  /* n_vec   --- numerator vector */
-                       const double* d_vec,  /* d_vec   --- denominator vector */
-                       double* opt,          /* opt     --- optimum */
-                       double* work,         /* work    --- work space (see below) */
-                       int* next, /* next    --- array of indices into halves */
-                       int* prev) /* prev    --- array of indices into halves */
+inline int linfracprog(
+    const double* halves, /* halves  --- half spaces */
+    const int max_size,   /* max_size --- size of halves array */
+    const int m,          /* m       --- terminal marker */
+    const double* n_vec,  /* n_vec   --- numerator vector */
+    const double* d_vec,  /* d_vec   --- denominator vector */
+    double* opt,          /* opt     --- optimum */
+    double* work,         /* work    --- work space (see below) */
+    int* next,            /* next    --- array of indices into halves */
+    int* prev)            /* prev    --- array of indices into halves */
 /*
 **
 ** half-spaces are in the form
@@ -473,7 +476,8 @@ inline int linfracprog(const double* halves, /* halves  --- half spaces */
           double* new_plane = new_halves + j * d;
           for (int k = 0; k <= d; k++) {
             const int l = k < imax ? k : k - 1;
-            new_plane[l] = k != imax ? old_plane[k] - plane_i[k] * crit : new_plane[l];
+            new_plane[l] =
+                k != imax ? old_plane[k] - plane_i[k] * crit : new_plane[l];
           }
         }
       }
@@ -518,7 +522,8 @@ inline int linfracprog<1>(const double* halves, const int max_size, const int m,
                           const double* n_vec, const double* d_vec, double* opt,
                           double* work, int* next, int* prev) {
   if (m > 0) {
-    return lp_base_case((const double (*)[2])halves, m, n_vec, d_vec, opt, next, prev);
+    return lp_base_case((const double (*)[2])halves, m, n_vec, d_vec, opt, next,
+                        prev);
   } else {
     return lp_no_con<1>(n_vec, d_vec, opt);
   }
@@ -595,8 +600,9 @@ inline double linprog(const Eigen::Matrix<double, d, 1>& c,
   /* flag the last plane */
   next(perm(m - 2) + 1) = m;
 
-  int status = sdlp::linfracprog<d>(halves.data(), m, m, n_vec.data(), d_vec.data(),
-                                    opt.data(), work.data(), next.data(), prev.data());
+  int status =
+      sdlp::linfracprog<d>(halves.data(), m, m, n_vec.data(), d_vec.data(),
+                           opt.data(), work.data(), next.data(), prev.data());
 
   /* handle states for linprog whose definitions differ from linfracprog */
   double minimum = INFINITY;

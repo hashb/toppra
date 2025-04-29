@@ -1,10 +1,10 @@
 #ifndef NATURAL_CUBIC_SPLINES_H
 #define NATURAL_CUBIC_SPLINES_H
 
+#include <Eigen/Dense>
 #include <iostream>
 #include <vector>
 
-#include <Eigen/Dense>
 #include "toppra/math/natural_spline_types.hpp"
 
 class NaturalCubicSplines {

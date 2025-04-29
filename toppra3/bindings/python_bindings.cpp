@@ -1,6 +1,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
 #include "toppra3.hpp"
 
 namespace py = pybind11;
@@ -14,21 +15,27 @@ PYBIND11_MODULE(_toppra3, m) {
       .def_readwrite("q", &toppra3::TimedWaypoint::q)
       .def_readwrite("dq", &toppra3::TimedWaypoint::dq)
       .def_readwrite("ddq", &toppra3::TimedWaypoint::ddq)
-      .def_readwrite("time_from_start", &toppra3::TimedWaypoint::time_from_start)
+      .def_readwrite("time_from_start",
+                     &toppra3::TimedWaypoint::time_from_start)
       .def_readwrite("segment_index", &toppra3::TimedWaypoint::segment_index)
-      .def_readwrite("is_path_position", &toppra3::TimedWaypoint::is_path_position)
-      .def_readwrite("time_from_previous", &toppra3::TimedWaypoint::time_from_previous);
+      .def_readwrite("is_path_position",
+                     &toppra3::TimedWaypoint::is_path_position)
+      .def_readwrite("time_from_previous",
+                     &toppra3::TimedWaypoint::time_from_previous);
 
   // Bind InputData class with all parameters
   py::class_<toppra3::InputData>(m, "InputData")
-      .def(py::init<int, std::vector<double>, std::vector<double>, std::vector<double>,
-                    std::vector<int>, std::vector<std::vector<double>>,
+      .def(py::init<int, std::vector<double>, std::vector<double>,
+                    std::vector<double>, std::vector<int>,
+                    std::vector<std::vector<double>>,
                     std::vector<std::vector<double>>>(),
            py::arg("num_joints"), py::arg("max_joint_velocity"),
            py::arg("max_joint_acceleration"), py::arg("max_joint_jerk"),
-           py::arg("segment_indices"), py::arg("scale_factors"), py::arg("waypoints"))
+           py::arg("segment_indices"), py::arg("scale_factors"),
+           py::arg("waypoints"))
       .def_readwrite("num_joints_", &toppra3::InputData::num_joints_)
-      .def_readwrite("max_joint_velocity", &toppra3::InputData::max_joint_velocity)
+      .def_readwrite("max_joint_velocity",
+                     &toppra3::InputData::max_joint_velocity)
       .def_readwrite("max_joint_acceleration",
                      &toppra3::InputData::max_joint_acceleration)
       .def_readwrite("max_joint_jerk", &toppra3::InputData::max_joint_jerk)
@@ -43,7 +50,8 @@ PYBIND11_MODULE(_toppra3, m) {
 
   py::class_<toppra3::Toppra3Parameterization>(m, "Toppra3Parameterization")
       .def(py::init<int>())
-      .def("solve", &toppra3::Toppra3Parameterization::solve, py::arg("input_data"),
-           py::arg("use_jerk_limits") = true, py::call_guard<py::gil_scoped_release>())
+      .def("solve", &toppra3::Toppra3Parameterization::solve,
+           py::arg("input_data"), py::arg("use_jerk_limits") = true,
+           py::call_guard<py::gil_scoped_release>())
       .def("get_num_joints", &toppra3::Toppra3Parameterization::getNumJoints);
 }

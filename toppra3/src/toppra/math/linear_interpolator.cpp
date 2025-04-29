@@ -8,7 +8,8 @@ LinearInterpolator::LinearInterpolator(const std::vector<double>& x,
   if (x.size() != y.size()) {
     throw std::invalid_argument(
         "x and y vectors must have the same size got x.size() = " +
-        std::to_string(x.size()) + " and y.size() = " + std::to_string(y.size()));
+        std::to_string(x.size()) +
+        " and y.size() = " + std::to_string(y.size()));
   }
   if (x.size() < 2) {
     throw std::invalid_argument("Need at least 2 points for interpolation");
@@ -18,8 +19,8 @@ LinearInterpolator::LinearInterpolator(const std::vector<double>& x,
   for (size_t i = 1; i < x.size(); ++i) {
     if (x[i] <= x[i - 1]) {
       throw std::invalid_argument(
-          "x values must be strictly increasing got x[i] = " + std::to_string(x[i]) +
-          " and x[i-1] = " + std::to_string(x[i - 1]));
+          "x values must be strictly increasing got x[i] = " +
+          std::to_string(x[i]) + " and x[i-1] = " + std::to_string(x[i - 1]));
     }
   }
 

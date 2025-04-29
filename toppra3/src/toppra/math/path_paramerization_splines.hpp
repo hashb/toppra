@@ -2,10 +2,9 @@
 #ifndef PATH_PARAMETERIZATION_SPLINES_H
 #define PATH_PARAMETERIZATION_SPLINES_H
 
+#include <Eigen/Dense>
 #include <iostream>
 #include <vector>
-
-#include <Eigen/Dense>
 
 // spline class for TOPP(time optimal path parameterization)
 // given s0, s1, ..., sN and corresponding

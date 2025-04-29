@@ -15,8 +15,9 @@ typedef std::array<InequalData, 3> InequalDataList;
 /**
  * @brief Time-Optimal Path Parameterization (TOPP) solver with jerk constraints
  *
- * This class implements a Time-Optimal Path Parameterization solver that finds the
- * optimal velocity profile along a predefined geometric path while respecting:
+ * This class implements a Time-Optimal Path Parameterization solver that finds
+ * the optimal velocity profile along a predefined geometric path while
+ * respecting:
  * - Joint velocity limits
  * - Joint acceleration limits
  * - Joint torque limits
@@ -30,8 +31,8 @@ typedef std::array<InequalData, 3> InequalDataList;
  * 2. TOPP3:
  *    Refines the solution considering 3rd order (jerk) constraints
  *
- * The optimization is formulated as a Linear Programming (LP) problem at each waypoint,
- * solving for the squared path velocity (s_dot^2).
+ * The optimization is formulated as a Linear Programming (LP) problem at each
+ * waypoint, solving for the squared path velocity (s_dot^2).
  *
  * Key variables:
  * s: Path parameter (0 to 1)
@@ -126,7 +127,8 @@ class ToptSolver {
    * @param x0_list Current velocity profile
    * @param constraints Output constraint matrices A, b
    */
-  void get3rdlimit(int k, const std::vector<double>& x0_list, InequalData& constraints);
+  void get3rdlimit(int k, const std::vector<double>& x0_list,
+                   InequalData& constraints);
 
   double getFeasibleX(int k);
   double getControllableX(int k, double xmax_c_kk);
@@ -167,8 +169,8 @@ class ToptSolver {
    * @param alpha Trust region size
    * @return List of constraint matrices for each order
    */
-  InequalDataList buildTOPP3Ineq(const std::vector<double>& x0_list, int k, int h,
-                                 double alpha = 1.);
+  InequalDataList buildTOPP3Ineq(const std::vector<double>& x0_list, int k,
+                                 int h, double alpha = 1.);
   /**
    * @brief Updates third order constraints for TOPP3
    *
@@ -184,7 +186,8 @@ class ToptSolver {
    */
   void updateTOPP3Ineq(const std::vector<double>& x0_list, int k, int h,
                        InequalDataList& TOPP3Ineq, double alpha = 1.);
-  Eigen::VectorXd getCostCoeffs(const std::vector<double>& x0_list, int k, int h);
+  Eigen::VectorXd getCostCoeffs(const std::vector<double>& x0_list, int k,
+                                int h);
 
   // check functions
   double checkLimits(const std::vector<double>& x0_list);

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <iostream>
-
 #include <Eigen/Dense>
+#include <iostream>
 
 class SYSTEM_DATA {
  public:

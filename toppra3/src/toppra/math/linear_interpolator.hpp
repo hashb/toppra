@@ -14,7 +14,8 @@ class LinearInterpolator {
    * @param y Vector of y coordinates (must be same size as x)
    * @throws std::invalid_argument if inputs are invalid
    */
-  LinearInterpolator(const std::vector<double>& x, const std::vector<double>& y);
+  LinearInterpolator(const std::vector<double>& x,
+                     const std::vector<double>& y);
 
   /**
    * @brief Interpolates to find y value at given x

@@ -6,6 +6,7 @@
 // #include "toppra/math/natural_vcquartic_splines.hpp"
 // #include "toppra/math/path_hermite_splines.hpp"
 #include <Eigen/Dense>
+
 #include "toppra/math/path_paramerization_splines.hpp"
 
 class TrajectoryManager {

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+
 #include "bindings/toppra3.hpp"
 
 int main() {
@@ -52,7 +53,8 @@ int main() {
     }
   }
   toppra3::InputData limits(num_dof, max_joint_velocity, max_joint_acceleration,
-                            max_joint_jerk, segment_indices, scale_factors, waypoints);
+                            max_joint_jerk, segment_indices, scale_factors,
+                            waypoints);
 
   // Create parameterization solver
   toppra3::Toppra3Parameterization parameterizer(num_dof);
