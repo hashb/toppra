@@ -51,12 +51,13 @@ before-all = [
     # Install Eigen
     "wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz",
     "tar -xzf eigen-3.4.0.tar.gz",
-    "cd eigen-3.4.0 && mkdir build && cd build && cmake .. && make install",
+    "cd eigen-3.4.0 && mkdir build && cd build && cmake .. && make install && cd ../..",
     # Install Clp
+    "mkdir -p coin && cd coin",
     "wget https://raw.githubusercontent.com/coin-or/coinbrew/master/coinbrew",
     "chmod u+x coinbrew",
     "./coinbrew update --no-prompt",
-    "./coinbrew fetch build Clp@releases/1.17.10 -j 10 -t none -p /opt/coin",
+    "./coinbrew fetch build Clp@master -j 10 -t none -p /opt/coin",
 ]
 
 [tool.cibuildwheel.macos]
