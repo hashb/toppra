@@ -14,7 +14,7 @@
 curl -fsSL https://pixi.sh/install.sh | sh
 source ~/.bashrc
 
-pixi run -e linux configure \
+pixi run -e all configure \
             -DBUILD_ADVANCED_TESTING=OFF \
             -DBUILD_WITH_COLLISION_SUPPORT=On \
             -DBUILD_WITH_CASADI_SUPPORT=ON \
@@ -24,5 +24,5 @@ pixi run -e linux configure \
             -DBUILD_WITH_OPENMP_SUPPORT=ON \
             -DBUILD_PYTHON_BINDINGS_WITH_BOOST_MPFR_SUPPORT=OFF 
 
-pixi run -e linux cmake --build build --target all
-pixi run -e linux cmake --install build
+pixi run -e all cmake --build build --target all
+pixi run -e all cmake --install build
