@@ -55,7 +55,7 @@ before-all = [
     # Install Clp
     "wget https://raw.githubusercontent.com/coin-or/coinbrew/master/coinbrew",
     "chmod u+x coinbrew",
-    "./coinbrew fetch build Clp@releases/1.17.10 -j 10 -t none -p /usr",
+    "./coinbrew fetch build Clp@releases/1.17.10 -j 10 -t none -p /opt/coin",
 ]
 
 [tool.cibuildwheel.macos]

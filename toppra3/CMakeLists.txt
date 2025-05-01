@@ -14,15 +14,17 @@ set(PYBIND11_FINDPYTHON ON)
 find_package(Eigen3 REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
+list(PREPEND CMAKE_PREFIX_PATH "/opt/coin")
+
 # clp
 find_library(libClp
             NAMES libClp.so libClp.dylib
-            HINTS /usr/lib /usr/lib/x86_64-linux-gnu /opt/homebrew/lib
+            HINTS /usr/lib /usr/lib/x86_64-linux-gnu /opt/homebrew/lib /opt/coin/lib
             REQUIRED)
 
 find_library(libCoinUtils
             NAMES libCoinUtils.so libCoinUtils.dylib
-            HINTS /usr/lib /usr/lib/x86_64-linux-gnu /opt/homebrew/lib
+            HINTS /usr/lib /usr/lib/x86_64-linux-gnu /opt/homebrew/lib /opt/coin/lib
             REQUIRED)
 
 include_directories(
