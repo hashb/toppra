@@ -58,6 +58,13 @@ before-all = [
     "chmod u+x coinbrew",
     "./coinbrew update --no-prompt",
     "./coinbrew fetch build Clp@master -j 10 -t none -p /opt/coin",
+    "cd ../",
+    "git clone --recursive https://github.com/stack-of-tasks/pinocchio -b v3.6.0",
+    "cd pinocchio",
+    "mkdir build && cd build",
+    "cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/pinocchio",
+    "make -j$(nproc) install",
+    "cd ../..",
 ]
 
 [tool.cibuildwheel.macos]
