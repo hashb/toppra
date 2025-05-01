@@ -12,6 +12,7 @@
 
 # install pixi
 curl -fsSL https://pixi.sh/install.sh | sh
+source ~/.bashrc
 
 pixi run -e linux configure \
             -DBUILD_ADVANCED_TESTING=OFF \
