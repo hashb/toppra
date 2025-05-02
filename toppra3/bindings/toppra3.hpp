@@ -158,6 +158,10 @@ class InputData {
                       spl_acceleration_scale_factors.interpolate(s);
       sysdata.jm[i] =
           global_max_joint_jerk_eigen * spl_jerk_scale_factors.interpolate(s);
+
+      // linear vel/acc limits, -1 will be given if inactivated
+      sysdata.lvm[i] = spl_cart_vel_scale_factors.interpolate(s) * 1e-3;
+      sysdata.lam[i] = spl_cart_acc_scale_factors.interpolate(s) * 1e-3;
     }
     TOPT_DEBUG_MSG("|" << std::endl);
     return sysdata;
