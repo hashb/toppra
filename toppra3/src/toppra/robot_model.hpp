@@ -13,8 +13,8 @@
 #include <pinocchio/algorithm/kinematics.hpp>
 #include <pinocchio/algorithm/rnea.hpp>
 #include <pinocchio/fwd.hpp>
-#include <pinocchio/parsers/urdf.hpp>
 #include <pinocchio/parsers/mjcf.hpp>
+#include <pinocchio/parsers/urdf.hpp>
 #include <string>
 
 class RobotSystem {

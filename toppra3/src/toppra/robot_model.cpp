@@ -1,6 +1,8 @@
 #include "toppra/robot_model.hpp"
-#include "toppra/util.hpp"
+
 #include <chrono>
+
+#include "toppra/util.hpp"
 
 RobotSystem::RobotSystem(const RobotSystem& robotsys) {
   urdf_file_ = robotsys.urdf_file_;

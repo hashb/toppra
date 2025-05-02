@@ -1,6 +1,12 @@
 #include <Eigen/Dense>
+
+#if defined(__APPLE__)
 #include <coin/ClpSimplex.hpp>
 #include <coin/CoinPackedMatrix.hpp>
+#else
+#include <coin-or/ClpSimplex.hpp>
+#include <coin-or/CoinPackedMatrix.hpp>
+#endif
 
 class LPSolver {
  public:
