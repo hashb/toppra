@@ -18,7 +18,7 @@ git clone https://github.com/ros/console_bridge.git
 cd console_bridge
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/ -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
 make install
 
@@ -27,7 +27,7 @@ git clone https://github.com/ros/urdfdom_headers.git
 cd urdfdom_headers
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/ -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
 make install
 
@@ -35,7 +35,7 @@ git clone https://github.com/ros/urdfdom.git
 cd urdfdom
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/ -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 make
 make install
 
