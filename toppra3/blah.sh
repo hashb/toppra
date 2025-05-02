@@ -6,16 +6,11 @@ curl -fsSL https://pixi.sh/install.sh | sh
 source ~/.bashrc
 
 pixi run -e all configure \
-            -DBUILD_ADVANCED_TESTING=OFF \
+            -DBUILD_PYTHON_INTERFACE=OFF \
+            -DBUILD_UNIT_TESTS=OFF \
             -DBUILD_WITH_COLLISION_SUPPORT=OFF \
             -DBUILD_WITH_CASADI_SUPPORT=ON \
-            -DBUILD_WITH_AUTODIFF_SUPPORT=ON \
-            -DBUILD_WITH_EXTRA_SUPPORT=OFF \
-            -DBUILD_WITH_ACCELERATE_SUPPORT=OFF \
-            -DBUILD_WITH_SDF_SUPPORT=OFF \
-            -DBUILD_WITH_CODEGEN_SUPPORT=OFF \
-            -DBUILD_WITH_OPENMP_SUPPORT=ON \
-            -DBUILD_PYTHON_BINDINGS_WITH_BOOST_MPFR_SUPPORT=OFF 
+            -DBUILD_WITH_AUTODIFF_SUPPORT=ON
 
 pixi run -e all cmake --build build --target all
 pixi run -e all cmake --install build
