@@ -9,13 +9,21 @@
 
     <worldbody>
         <body name="link1" pos="0 0 0">
+            <inertial pos="0.05 0 0" mass="0.5" diaginertia="0.001 0.001 0.002" />
             <joint name="joint1" type="hinge" axis="0 0 1" />
             <geom fromto="0 0 0 0.1 0 0" />
             <body name="link2" pos="0.1 0 0">
+                <inertial pos="0.05 0 0" mass="0.3" diaginertia="0.0005 0.0005 0.001" />
                 <joint name="joint2" type="hinge" axis="0 0 1" />
                 <geom fromto="0 0 0 0.1 0 0" />
                 <site name="endeffector" pos="0.1 0 0" size="0.01" rgba="1 0 0 1" />
             </body>
         </body>
     </worldbody>
+
+    <actuator>
+        <motor joint="joint1" ctrlrange="-5 5" gear="1" />
+        <motor joint="joint2" ctrlrange="-5 5" gear="1" />
+    </actuator>
 </mujoco>
+  
