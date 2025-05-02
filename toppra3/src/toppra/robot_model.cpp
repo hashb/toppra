@@ -1,5 +1,5 @@
 #include "toppra/robot_model.hpp"
-
+#include "toppra/util.hpp"
 #include <chrono>
 
 RobotSystem::RobotSystem(const RobotSystem& robotsys) {
@@ -190,9 +190,9 @@ void RobotSystem::_updateSystemData() {
 
 void RobotSystem::_initializeRobotInfo() {
   // set pinocchio model & data
-  std::cout << "build pinocchio" << std::endl;
+  TOPT_DEBUG_MSG("build pinocchio");
   pinocchio::urdf::buildModel(urdf_file_, model_);
-  std::cout << "done" << std::endl;
+  TOPT_DEBUG_MSG("done");
   data_ = pinocchio::Data(model_);
   n_q_ = model_.nq;
   n_qdot_ = model_.nv;
@@ -224,28 +224,4 @@ void RobotSystem::_initializeRobotInfo() {
   }
   n_link_ = link_idx_map_.size();
   assert(n_dof_ == joint_idx_map_.size());
-}
-
-void RobotSystem::printRobotInfo() {
-  std::cout << " ==== Body Node ====" << std::endl;
-  for (auto& [idx, name] : link_idx_map_inv_) {
-    std::cout << "constexpr int " << name << " = " << std::to_string(idx) << ";"
-              << std::endl;
-  }
-  std::cout << " ==== DoF ====" << std::endl;
-  for (auto& [idx, name] : joint_idx_map_inv_) {
-    std::cout << "constexpr int " << name << " = " << std::to_string(idx) << ";"
-              << std::endl;
-  }
-  std::cout << " ==== Num ====" << std::endl;
-  std::cout << "constexpr int n_bodynode = " << std::to_string(n_link_) << ";"
-            << std::endl;
-  std::cout << "constexpr int n_dof = " << std::to_string(n_qdot_) << ";"
-            << std::endl;
-
-  std::cout << " ==== Just info ====" << std::endl;
-  std::cout << n_link_ << ", "       // 86
-            << n_q_ << ", "          // 25 7 + 12 + 6
-            << n_qdot_ << ", "       // 24  6 + 12 + 6
-            << n_dof_ << std::endl;  // 18 = 12 + 6
 }

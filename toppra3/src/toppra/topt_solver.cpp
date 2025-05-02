@@ -288,8 +288,8 @@ double ToptSolver::getControllableX(int k, double xmax_c_kk) {
     xmax_c_kk = soln[1];
     return xmax_c_k;
   } else {
-    std::cout << " HERE!!! solution not good @ " << k << std::endl;
-    std::cout << "soln = " << soln[0] << ", " << soln[1] << std::endl;
+    // std::cout << " HERE!!! solution not good @ " << k << std::endl;
+    // std::cout << "soln = " << soln[0] << ", " << soln[1] << std::endl;
     int N = 7;
     double xkk_tmp, xmaxk_tmp;
     double t(0.), mint(1000.);
@@ -312,7 +312,7 @@ double ToptSolver::getControllableX(int k, double xmax_c_kk) {
         xmax_c_k = xmaxk_tmp;
       }
     }
-    std::cout << "soln = " << xmax_c_k << ", " << xmax_c_kk << std::endl;
+    // std::cout << "soln = " << xmax_c_k << ", " << xmax_c_kk << std::endl;
     return xmax_c_k;
   }
 }

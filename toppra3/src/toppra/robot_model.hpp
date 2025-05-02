@@ -47,7 +47,6 @@ class RobotSystem {
   RobotSystem(const std::string& file);
   virtual ~RobotSystem(void);
 
-  void printRobotInfo();
   std::string getUrdfFile() { return urdf_file_; }
 
   // update fixed base system
