@@ -77,23 +77,29 @@ class InputData {
       std::shared_ptr<TrajectoryManager>& traj_manager) const {
     TOPT_DEBUG_MSG(".");
     toppra::math::LinearInterpolator spl_velocity_scale_factors(
-        traj_manager->s2q_times_, scale_factors[0]);
+        traj_manager->s2q_times_, waypoint_scale_factors[0]);
     TOPT_DEBUG_MSG(".");
     toppra::math::LinearInterpolator spl_acceleration_scale_factors(
-        traj_manager->s2q_times_, scale_factors[1]);
+        traj_manager->s2q_times_, waypoint_scale_factors[1]);
     TOPT_DEBUG_MSG(".");
     toppra::math::LinearInterpolator spl_jerk_scale_factors(
-        traj_manager->s2q_times_, scale_factors[2]);
+        traj_manager->s2q_times_, waypoint_scale_factors[2]);
     TOPT_DEBUG_MSG(".");
+    toppra::math::LinearInterpolator spl_cart_vel_scale_factors(
+        traj_manager->s2q_times_, waypoint_max_cart_vel_mm_per_s);
+    TOPT_DEBUG_MSG(".");
+    toppra::math::LinearInterpolator spl_cart_acc_scale_factors(
+        traj_manager->s2q_times_, waypoint_max_cart_acc_mm_per_s2);
 
-    Eigen::VectorXd max_joint_velocity_eigen =
-        Eigen::Map<const Eigen::VectorXd>(max_joint_velocity.data(),
-                                          max_joint_velocity.size());
-    Eigen::VectorXd max_joint_acceleration_eigen =
-        Eigen::Map<const Eigen::VectorXd>(max_joint_acceleration.data(),
-                                          max_joint_acceleration.size());
-    Eigen::VectorXd max_joint_jerk_eigen = Eigen::Map<const Eigen::VectorXd>(
-        max_joint_jerk.data(), max_joint_jerk.size());
+    Eigen::VectorXd global_max_joint_velocity_eigen =
+        Eigen::Map<const Eigen::VectorXd>(global_max_joint_velocity.data(),
+                                          global_max_joint_velocity.size());
+    Eigen::VectorXd global_max_joint_acceleration_eigen =
+        Eigen::Map<const Eigen::VectorXd>(global_max_joint_acceleration.data(),
+                                          global_max_joint_acceleration.size());
+    Eigen::VectorXd global_max_joint_jerk_eigen =
+        Eigen::Map<const Eigen::VectorXd>(global_max_joint_jerk.data(),
+                                          global_max_joint_jerk.size());
 
     SYSTEM_DATA sysdata;
     int n = traj_manager->spline_s2q_.getNumWpts();
@@ -115,14 +121,14 @@ class InputData {
 
       // Set limits at each waypoint
       sysdata.av[i] = sysdata.dq[i].cwiseProduct(sysdata.dq[i]);
-      Eigen::VectorXd v =
-          max_joint_velocity_eigen * spl_velocity_scale_factors.interpolate(s);
+      Eigen::VectorXd v = global_max_joint_velocity_eigen *
+                          spl_velocity_scale_factors.interpolate(s);
       sysdata.vm2[i] = v.cwiseProduct(v);
 
-      sysdata.am[i] = max_joint_acceleration_eigen *
+      sysdata.am[i] = global_max_joint_acceleration_eigen *
                       spl_acceleration_scale_factors.interpolate(s);
       sysdata.jm[i] =
-          max_joint_jerk_eigen * spl_jerk_scale_factors.interpolate(s);
+          global_max_joint_jerk_eigen * spl_jerk_scale_factors.interpolate(s);
     }
     TOPT_DEBUG_MSG("|" << std::endl);
     return sysdata;

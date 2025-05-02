@@ -39,7 +39,7 @@ PYBIND11_MODULE(_toppra3, m) {
                     std::vector<double>,  // waypoint_max_cart_vel_mm_per_s
                     std::vector<double>,  // waypoint_max_cart_acc_mm_per_s2
                     std::string,          // frame_name
-                    std::vector<std::vector<double>>,  // waypoints
+                    std::vector<std::vector<double>>  // waypoints
                     >(),
            py::arg("num_joints"), py::arg("global_max_joint_velocity"),
            py::arg("global_max_joint_acceleration"),

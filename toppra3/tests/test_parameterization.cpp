@@ -33,27 +33,49 @@ int main() {
   waypoints.push_back(end);
 
   // Create robot limits
-  std::vector<double> max_joint_velocity(num_dof);
-  max_joint_velocity[0] = 1.0;
-  max_joint_velocity[1] = 1.0;
-  std::vector<double> max_joint_acceleration(num_dof);
-  max_joint_acceleration[0] = 2.0;
-  max_joint_acceleration[1] = 2.0;
-  std::vector<double> max_joint_jerk(num_dof);
-  max_joint_jerk[0] = 5.0;
-  max_joint_jerk[1] = 5.0;
+  std::vector<double> global_max_joint_velocity(num_dof);
+  global_max_joint_velocity[0] = 1.0;
+  global_max_joint_velocity[1] = 1.0;
+  
+  std::vector<double> global_max_joint_acceleration(num_dof);
+  global_max_joint_acceleration[0] = 2.0;
+  global_max_joint_acceleration[1] = 2.0;
+  
+  std::vector<double> global_max_joint_jerk(num_dof);
+  global_max_joint_jerk[0] = 5.0;
+  global_max_joint_jerk[1] = 5.0;
+
+  std::vector<double> global_max_joint_torque(num_dof);
+  global_max_joint_torque[0] = 400.0;
+  global_max_joint_torque[1] = 400.0;
+
   std::vector<int> segment_indices(waypoints.size());
   for (int i = 0; i < waypoints.size(); i++) {
     segment_indices[i] = i;
   }
-  std::vector<std::vector<double>> scale_factors(3);
+  std::vector<std::vector<double>> waypoint_scale_factors(3);
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < waypoints.size(); j++) {
-      scale_factors[i].push_back(1.0);
+      waypoint_scale_factors[i].push_back(1.0);
     }
   }
-  toppra3::InputData limits(num_dof, max_joint_velocity, max_joint_acceleration,
-                            max_joint_jerk, segment_indices, scale_factors,
+
+  std::vector<double> waypoint_max_cart_vel_mm_per_s(num_dof);
+  waypoint_max_cart_vel_mm_per_s[0] = 100.0;
+  waypoint_max_cart_vel_mm_per_s[1] = 100.0;
+
+  std::vector<double> waypoint_max_cart_acc_mm_per_s2(num_dof);
+  waypoint_max_cart_acc_mm_per_s2[0] = 1000.0;
+  waypoint_max_cart_acc_mm_per_s2[1] = 1000.0;
+
+  std::string frame_name = "end_effector";
+
+  toppra3::InputData limits(num_dof, global_max_joint_velocity,
+                            global_max_joint_acceleration,
+                            global_max_joint_jerk, global_max_joint_torque,
+                            segment_indices, waypoint_scale_factors,
+                            waypoint_max_cart_vel_mm_per_s,
+                            waypoint_max_cart_acc_mm_per_s2, frame_name,
                             waypoints);
 
   // Create parameterization solver
