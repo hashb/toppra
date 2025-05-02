@@ -1,4 +1,4 @@
-git clone --recursive https://github.com/stack-of-tasks/pinocchio.git -b v3.6.0
+git clone --recursive https://github.com/hashb/pinocchio.git -b use-system-gcc
 cd pinocchio
 
 # install pixi
