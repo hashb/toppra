@@ -182,22 +182,22 @@ class Toppra3Parameterization {
   OutputData solve(const InputData& input_data, bool use_jerk_limits = true) {
     Clock clock;
     clock.start();
-    std::cout << "Toppra3Parameterization::solve SETUP 0" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve SETUP 0\n");
     std::shared_ptr<TrajectoryManager> traj_manager_ =
         std::make_shared<TrajectoryManager>();
-    std::cout << "Toppra3Parameterization::solve SETUP 1 (" << clock.stop()
-              << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve SETUP 1 (" << clock.stop()
+              << "ms)\n");
     clock.start();
     std::shared_ptr<ToptSolver> solver_ =
         std::make_shared<ToptSolver>(num_joints_);
-    std::cout << "Toppra3Parameterization::solve SETUP 2 (" << clock.stop()
-              << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve SETUP 2 (" << clock.stop()
+              << "ms)\n");
     clock.start();
 
     // Convert waypoints to normalized path
     std::vector<Eigen::VectorXd> normalized_waypoints;
-    std::cout << "Toppra3Parameterization::solve PREPROCESSING 3 ("
-              << clock.stop() << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve PREPROCESSING 3 ("
+                   << clock.stop() << "ms)\n");
     clock.start();
 
     // convert waypoints to eigen vectors
@@ -210,27 +210,26 @@ class Toppra3Parameterization {
 
     traj_manager_->redistQwptsPureNormDist(eigen_waypoints,
                                            normalized_waypoints);
-    std::cout << "Toppra3Parameterization::solve PREPROCESSING 4 ("
-              << clock.stop() << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve PREPROCESSING 4 ("
+                   << clock.stop() << "ms)\n");
     clock.start();
     traj_manager_->setS2QSpline(normalized_waypoints);
-    std::cout << "Toppra3Parameterization::solve PREPROCESSING 5 ("
-              << clock.stop() << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve PREPROCESSING 5 ("
+                   << clock.stop() << "ms)\n");
     clock.start();
 
     // Convert limits to system data format
     SYSTEM_DATA sysdata = input_data.toSystemData(traj_manager_);
-    std::cout << "Toppra3Parameterization::solve SOLVE 6 (" << clock.stop()
-              << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve SOLVE 6 (" << clock.stop()
+              << "ms)\n");
     clock.start();
-    std::cout << std::endl;
+    TOPT_DEBUG_MSG("\n");
 
     // Solve time-optimal parameterization
     bool success =
         solver_->solve(sysdata, traj_manager_.get(), use_jerk_limits);
-    std::cout << std::endl;
-    std::cout << "Toppra3Parameterization::solve POSTPROCESSING 7 ("
-              << clock.stop() << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve POSTPROCESSING 7 ("
+                   << clock.stop() << "ms)\n");
     if (!success) {
       OutputData output_data;
       output_data.success = false;
@@ -246,8 +245,8 @@ class Toppra3Parameterization {
     for (const auto& segment_index : input_data.segment_indices) {
       segment_indicies_as_double.push_back(static_cast<double>(segment_index));
     }
-    std::cout << "Toppra3Parameterization::solve POSTPROCESSING 8 ("
-              << clock.stop() << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve POSTPROCESSING 8 ("
+                   << clock.stop() << "ms)\n");
     clock.start();
     toppra::math::LinearInterpolator spl_segment_indicies_at_input_times(
         traj_manager_->s2q_times_, segment_indicies_as_double);
@@ -258,14 +257,14 @@ class Toppra3Parameterization {
           spl_segment_indicies_at_input_times.interpolate(
               traj_manager_->s2q_gridpoints_[i]);
     }
-    std::cout << "Toppra3Parameterization::solve POSTPROCESSING 9 ("
-              << clock.stop() << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve POSTPROCESSING 9 ("
+                   << clock.stop() << "ms)\n");
     clock.start();
     toppra::math::LinearInterpolator
         spl_segment_indicies_at_parameterized_times(
             traj_manager_->t2q_gridpoints_, segment_indices_at_gridpoints);
-    std::cout << "Toppra3Parameterization::solve POSTPROCESSING 10 ("
-              << clock.stop() << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve POSTPROCESSING 10 ("
+                   << clock.stop() << "ms)\n");
     clock.start();
 
     // Interpolate times
@@ -305,8 +304,8 @@ class Toppra3Parameterization {
       timed_waypoint.is_path_position = true;
       output_data.waypoints.push_back(timed_waypoint);
     }
-    std::cout << "Toppra3Parameterization::solve POSTPROCESSING 11 ("
-              << clock.stop() << "ms)" << std::endl;
+    TOPT_DEBUG_MSG("Toppra3Parameterization::solve POSTPROCESSING 11 ("
+                   << clock.stop() << "ms)\n");
 
     output_data.success = success;
     return output_data;
