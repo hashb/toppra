@@ -47,7 +47,7 @@ environment = { CMAKE_ARGS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON" }
 [tool.cibuildwheel.linux]
 before-all = [
     # Install dependencies
-    "yum install -y wget sudo",
+    "yum install -y wget sudo binutils-devel",
     # Install Eigen
     "wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz",
     "tar -xzf eigen-3.4.0.tar.gz",
