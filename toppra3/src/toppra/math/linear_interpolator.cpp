@@ -1,5 +1,5 @@
 #include "math/linear_interpolator.hpp"
-
+#include "toppra/util.hpp"
 namespace toppra {
 namespace math {
 

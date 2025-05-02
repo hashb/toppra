@@ -14,6 +14,7 @@
 #include <pinocchio/algorithm/rnea.hpp>
 #include <pinocchio/fwd.hpp>
 #include <pinocchio/parsers/urdf.hpp>
+#include <pinocchio/parsers/mjcf.hpp>
 #include <string>
 
 class RobotSystem {

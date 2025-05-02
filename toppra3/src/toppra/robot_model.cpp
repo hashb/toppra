@@ -191,7 +191,11 @@ void RobotSystem::_updateSystemData() {
 void RobotSystem::_initializeRobotInfo() {
   // set pinocchio model & data
   TOPT_DEBUG_MSG("build pinocchio");
-  pinocchio::urdf::buildModel(urdf_file_, model_);
+  if (urdf_file_.substr(urdf_file_.length() - 4) == ".xml") {
+    pinocchio::mjcf::buildModel(urdf_file_, model_);
+  } else {
+    pinocchio::urdf::buildModel(urdf_file_, model_);
+  }
   TOPT_DEBUG_MSG("done");
   data_ = pinocchio::Data(model_);
   n_q_ = model_.nq;

@@ -60,13 +60,15 @@ int main() {
     }
   }
 
-  std::vector<double> waypoint_max_cart_vel_mm_per_s(num_dof);
-  waypoint_max_cart_vel_mm_per_s[0] = 100.0;
-  waypoint_max_cart_vel_mm_per_s[1] = 100.0;
+  std::vector<double> waypoint_max_cart_vel_mm_per_s(waypoints.size());
+  for (int i = 0; i < waypoints.size(); i++) {
+    waypoint_max_cart_vel_mm_per_s[i] = 100.0;
+  }
 
-  std::vector<double> waypoint_max_cart_acc_mm_per_s2(num_dof);
-  waypoint_max_cart_acc_mm_per_s2[0] = 1000.0;
-  waypoint_max_cart_acc_mm_per_s2[1] = 1000.0;
+  std::vector<double> waypoint_max_cart_acc_mm_per_s2(waypoints.size());
+  for (int i = 0; i < waypoints.size(); i++) {
+    waypoint_max_cart_acc_mm_per_s2[i] = 1000.0;
+  }
 
   std::string frame_name = "end_effector";
   std::string mjcf_path = "tests/test_robot.xml";
