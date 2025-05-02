@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "toppra/clock.hpp"
@@ -9,6 +10,7 @@
 #include "toppra/topt_solver.hpp"
 #include "toppra/trajectory_manager.hpp"
 #include "toppra/user_command.hpp"
+#include "toppra/util.hpp"
 
 namespace toppra3 {
 void vectorToEigen(const std::vector<double>& vec, Eigen::VectorXd& eigen_vec) {
@@ -27,98 +29,62 @@ void eigenToVector(const Eigen::VectorXd& eigen_vec, std::vector<double>& vec) {
  */
 class InputData {
  public:
-  InputData(int num_joints, std::vector<double> max_joint_velocity,
-            std::vector<double> max_joint_acceleration,
-            std::vector<double> max_joint_jerk,
+  InputData(int num_joints, std::vector<double> global_max_joint_velocity,
+            std::vector<double> global_max_joint_acceleration,
+            std::vector<double> global_max_joint_jerk,
+            std::vector<double> global_max_joint_torque,
             std::vector<int> segment_indices,
-            std::vector<std::vector<double>> scale_factors,
-            std::vector<std::vector<double>> q,
-            std::vector<std::vector<double>> dq,
-            std::vector<std::vector<double>> ddq,
-            std::vector<std::vector<double>> m,
-            std::vector<std::vector<double>> b,
-            std::vector<std::vector<double>> g,
-            std::vector<std::vector<double>> av,
-            std::vector<std::vector<double>> vm2,
-            std::vector<std::vector<double>> tm,
-            std::vector<std::vector<double>> am,
-            std::vector<std::vector<double>> jm,
-            std::vector<std::vector<double>> frame_pos,
-            std::vector<std::vector<double>> frame_vel,
-            std::vector<std::vector<double>> frame_acc,
-            std::vector<std::vector<double>> frame_vel_limit,
-            std::vector<std::vector<double>> frame_acc_limit)
+            std::vector<std::vector<double>> waypoint_scale_factors,
+            std::vector<double> waypoint_max_cart_vel_mm_per_s,
+            std::vector<double> waypoint_max_cart_acc_mm_per_s2,
+            std::string frame_name, std::vector<std::vector<double>> waypoints)
       : num_joints_(num_joints),
-        max_joint_velocity(max_joint_velocity),
-        max_joint_acceleration(max_joint_acceleration),
-        max_joint_jerk(max_joint_jerk),
+        global_max_joint_velocity(global_max_joint_velocity),
+        global_max_joint_acceleration(global_max_joint_acceleration),
+        global_max_joint_jerk(global_max_joint_jerk),
+        global_max_joint_torque(global_max_joint_torque),
         segment_indices(segment_indices),
-        scale_factors(scale_factors),
-        q(q),
-        dq(dq),
-        ddq(ddq),
-        m(m),
-        b(b),
-        g(g),
-        av(av),
-        vm2(vm2),
-        tm(tm),
-        am(am),
-        jm(jm),
-        frame_pos(frame_pos),
-        frame_vel(frame_vel),
-        frame_acc(frame_acc),
-        frame_vel_limit(frame_vel_limit),
-        frame_acc_limit(frame_acc_limit) {}
+        waypoint_scale_factors(waypoint_scale_factors),
+        waypoint_max_cart_vel_mm_per_s(waypoint_max_cart_vel_mm_per_s),
+        waypoint_max_cart_acc_mm_per_s2(waypoint_max_cart_acc_mm_per_s2),
+        frame_name(frame_name),
+        waypoints(waypoints) {}
 
   // dims
   int num_joints_;
 
   // Joint limits
-  std::vector<double> max_joint_velocity;
-  std::vector<double> max_joint_acceleration;
-  std::vector<double> max_joint_jerk;
+  std::vector<double> global_max_joint_velocity;
+  std::vector<double> global_max_joint_acceleration;
+  std::vector<double> global_max_joint_jerk;
+  // torque limits
+  std::vector<double> global_max_joint_torque;
 
   // segment indices
   std::vector<int> segment_indices;
+  // scale factors
+  std::vector<std::vector<double>> waypoint_scale_factors;
+  // cart limits
+  std::vector<double> waypoint_max_cart_vel_mm_per_s;
+  std::vector<double> waypoint_max_cart_acc_mm_per_s2;
+  std::string frame_name;
 
   // waypoints
-  std::vector<std::vector<double>> q;
-  std::vector<std::vector<double>> dq;
-  std::vector<std::vector<double>> ddq;
-  std::vector<std::vector<double>> m;
-  std::vector<std::vector<double>> b;
-  std::vector<std::vector<double>> g;
-  std::vector<std::vector<double>> av;
-
-  std::vector<std::vector<double>> vm2;
-  std::vector<std::vector<double>> tm;
-  std::vector<std::vector<double>> am;
-  std::vector<std::vector<double>> jm;
-
-  std::vector<std::vector<double>> frame_pos;
-  std::vector<std::vector<double>> frame_vel;
-  std::vector<std::vector<double>> frame_acc;
-
-  std::vector<std::vector<double>> frame_vel_limit;
-  std::vector<std::vector<double>> frame_acc_limit;
-
-  // scale factors
-  std::vector<std::vector<double>> scale_factors;
+  std::vector<std::vector<double>> waypoints;
 
   // Convert to SYSTEM_DATA format used internally
   SYSTEM_DATA toSystemData(
       std::shared_ptr<TrajectoryManager>& traj_manager) const {
-    std::cout << ".";
+    TOPT_DEBUG_MSG(".");
     toppra::math::LinearInterpolator spl_velocity_scale_factors(
         traj_manager->s2q_times_, scale_factors[0]);
-    std::cout << ".";
+    TOPT_DEBUG_MSG(".");
     toppra::math::LinearInterpolator spl_acceleration_scale_factors(
         traj_manager->s2q_times_, scale_factors[1]);
-    std::cout << ".";
+    TOPT_DEBUG_MSG(".");
     toppra::math::LinearInterpolator spl_jerk_scale_factors(
         traj_manager->s2q_times_, scale_factors[2]);
-    std::cout << ".";
+    TOPT_DEBUG_MSG(".");
 
     Eigen::VectorXd max_joint_velocity_eigen =
         Eigen::Map<const Eigen::VectorXd>(max_joint_velocity.data(),
@@ -139,7 +105,7 @@ class InputData {
       sysdata.s[i] = s;
       s += ds;
     }
-    std::cout << ".";
+    TOPT_DEBUG_MSG(".");
     // Set path waypoints
     for (int i = 0; i < n; i++) {
       s = sysdata.s[i];
@@ -158,7 +124,7 @@ class InputData {
       sysdata.jm[i] =
           max_joint_jerk_eigen * spl_jerk_scale_factors.interpolate(s);
     }
-    std::cout << "|" << std::endl;
+    TOPT_DEBUG_MSG("|" << std::endl);
     return sysdata;
   }
 };
@@ -170,6 +136,11 @@ class TimedWaypoint {
   std::vector<double> q;
   std::vector<double> dq;
   std::vector<double> ddq;
+
+  std::string frame_name;
+  std::vector<double> cart_pos;
+  std::vector<double> cart_vel;
+  std::vector<double> cart_acc;
 
   double time_from_start;
   int segment_index;

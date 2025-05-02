@@ -1,21 +1,11 @@
 #include "toppra/topt_solver.hpp"
 
-#ifndef TOPT_DEBUG_PRINT
-#define TOPT_DEBUG_PRINT 0
-#endif
-
-#define TOPT_DEBUG_MSG(msg) \
-  do {                      \
-    if (TOPT_DEBUG_PRINT) { \
-      std::cout << msg;     \
-    }                       \
-  } while (0)
-
 #include "toppra/clock.hpp"
 #include "toppra/clpwrapper.hpp"
 #include "toppra/math/math_utilities.hpp"
 #include "toppra/topt_utils.hpp"
 #include "toppra/trajectory_manager.hpp"
+#include "toppra/util.hpp"
 
 ToptSolver::ToptSolver(int dim) {
   // toppra::pretty_constructor(2, "ToptSolver");
