@@ -4,7 +4,7 @@ requires = [
     "cmake>=3.15",
     "pybind11>=2.10",
     "pybind11-stubgen",
-    "ninja",
+    "numpy<2.0",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -64,7 +64,7 @@ before-all = [
 ]
 
 [tool.cibuildwheel.macos]
-before-all = "brew install eigen clp coinutils"
+before-all = "brew install eigen clp coinutils pinocchio"
 archs = ["arm64"]
 environment = { MACOSX_DEPLOYMENT_TARGET="10.13" }
 
