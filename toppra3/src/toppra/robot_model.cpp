@@ -1,6 +1,6 @@
-#include <chrono>
-
 #include "toppra/robot_model.hpp"
+
+#include <chrono>
 
 RobotSystem::RobotSystem(const RobotSystem& robotsys) {
   urdf_file_ = robotsys.urdf_file_;
@@ -10,7 +10,7 @@ RobotSystem::RobotSystem(const RobotSystem& robotsys) {
 
 RobotSystem::RobotSystem(const std::string& file) : urdf_file_(file) {
   _initializeRobotInfo();
-//   printRobotInfo();
+  //   printRobotInfo();
 }
 
 RobotSystem::~RobotSystem() {}

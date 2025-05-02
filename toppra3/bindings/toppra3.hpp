@@ -7,11 +7,11 @@
 
 #include "toppra/clock.hpp"
 #include "toppra/math/linear_interpolator.hpp"
+#include "toppra/robot_model.hpp"
 #include "toppra/topt_solver.hpp"
 #include "toppra/trajectory_manager.hpp"
 #include "toppra/user_command.hpp"
 #include "toppra/util.hpp"
-#include "toppra/robot_model.hpp"
 
 namespace toppra3 {
 void vectorToEigen(const std::vector<double>& vec, Eigen::VectorXd& eigen_vec) {
@@ -74,8 +74,8 @@ class InputData {
   std::vector<std::vector<double>> waypoints;
 
   // Convert to SYSTEM_DATA format used internally
-  SYSTEM_DATA toSystemData(
-      std::shared_ptr<TrajectoryManager>& traj_manager) const {
+  SYSTEM_DATA toSystemData(std::shared_ptr<TrajectoryManager>& traj_manager,
+                           std::shared_ptr<RobotSystem>& robot_model) const {
     TOPT_DEBUG_MSG(".");
     toppra::math::LinearInterpolator spl_velocity_scale_factors(
         traj_manager->s2q_times_, waypoint_scale_factors[0]);
@@ -106,6 +106,12 @@ class InputData {
     int n = traj_manager->spline_s2q_.getNumWpts();
     sysdata.resize(n);
 
+    // store sys data along the path
+    Eigen::VectorXd q, dq, ddq;
+    Eigen::MatrixXd J;
+    Eigen::VectorXd dJdq;
+    Eigen::VectorXd grav{{0., 0., -9.8}};
+
     double s = 0.;
     double ds = 1. / ((double)(n - 1));
     for (int i(0); i < n; ++i) {
@@ -116,9 +122,31 @@ class InputData {
     // Set path waypoints
     for (int i = 0; i < n; i++) {
       s = sysdata.s[i];
-      sysdata.q[i] = traj_manager->spline_s2q_.evaluate(s);
-      sysdata.dq[i] = traj_manager->spline_s2q_.evaluateFirstDerivative(s);
-      sysdata.ddq[i] = traj_manager->spline_s2q_.evaluateSecondDerivative(s);
+      q = traj_manager->spline_s2q_.evaluate(s);
+      dq = traj_manager->spline_s2q_.evaluateFirstDerivative(s);
+      ddq = traj_manager->spline_s2q_.evaluateSecondDerivative(s);
+      robot_model->updateSystem(q, dq);
+      sysdata.q[i] = q;
+      sysdata.dq[i] = dq;
+      sysdata.ddq[i] = ddq;
+
+      // for the cartesian vel/acc constraint
+      sysdata.ee[i] =
+          robot_model->getBodyNodeIsometry(frame_name).translation();
+      J = robot_model->getBodyNodeJacobian(frame_name);
+      // J'(q,q')q'
+      dJdq = robot_model->getBodyNodeJacobianDotQDot(frame_name);
+      sysdata.ee_v[i] = J.bottomRows(3) * dq;
+      sysdata.ee_a[i] = J.bottomRows(3) * ddq + dJdq.bottomRows(3);
+
+      // M(q(s))*(q''ds2+q'dds)+C(q, q')q'ds2+g(q(s))
+      //  = m dds + b ds2 + g
+      // m=Mq', b=M(q)*q''+C(q,q')q', g=g(q)
+      sysdata.m[i] = robot_model->getMassMatrix() * dq;
+      sysdata.b[i] = robot_model->getMassMatrix() * ddq +
+                     robot_model->getCoriolisMatrix() * dq;
+      sysdata.g[i] = robot_model->getGravity();
+      sysdata.tm[i] = robot_model->GetTorqueUpperLimits();
 
       // Set limits at each waypoint
       sysdata.av[i] = sysdata.dq[i].cwiseProduct(sysdata.dq[i]);
@@ -223,7 +251,7 @@ class Toppra3Parameterization {
     clock.start();
 
     // Convert limits to system data format
-    SYSTEM_DATA sysdata = input_data.toSystemData(traj_manager_);
+    SYSTEM_DATA sysdata = input_data.toSystemData(traj_manager_, robot_model_);
     TOPT_DEBUG_MSG("Toppra3Parameterization::solve SOLVE 6 (" << clock.stop()
                                                               << "ms)\n");
     clock.start();
