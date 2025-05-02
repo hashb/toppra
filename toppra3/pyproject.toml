@@ -58,6 +58,7 @@ before-all = [
     "chmod u+x coinbrew",
     "./coinbrew update --no-prompt",
     "./coinbrew fetch build Clp@master -j 10 -t none -p /opt/coin",
+    "ls /opt/coin",
     "cd ../",
     "chmod u+x blah.sh",
     "./blah.sh",
