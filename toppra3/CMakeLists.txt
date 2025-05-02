@@ -13,6 +13,7 @@ set(PYBIND11_FINDPYTHON ON)
 # Find required packages
 find_package(Eigen3 REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
+find_package(pinocchio REQUIRED)
 
 list(PREPEND CMAKE_PREFIX_PATH "/opt/coin")
 
@@ -51,7 +52,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/toppra/math
 )
 
-
 # library files
 file(GLOB TOPPRA_CORE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/toppra/*.cpp")
 file(GLOB TOPPRA_MATH_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/toppra/math/*.cpp")
@@ -77,7 +77,7 @@ target_compile_features(libtoppra3 PUBLIC cxx_std_17)
 
 # Link dependencies
 target_link_libraries(libtoppra3 PUBLIC
-    Eigen3::Eigen ${libCoinUtils} ${libClp} Backward::Interface
+    Eigen3::Eigen ${libCoinUtils} ${libClp} Backward::Interface pinocchio::pinocchio
 )
 
 # Add python bindings
@@ -88,7 +88,7 @@ pybind11_add_module(_toppra3
 # Link against required libraries
 target_link_libraries(_toppra3 PRIVATE
     libtoppra3
-    Eigen3::Eigen ${libCoinUtils} ${libClp}
+    Eigen3::Eigen ${libCoinUtils} ${libClp} pinocchio::pinocchio
 )
 
 # Set include directories for Python module
@@ -131,5 +131,5 @@ target_include_directories(test_parameterization PUBLIC
 
 # Link against the main library
 target_link_libraries(test_parameterization PRIVATE
-    libtoppra3 Backward::Interface
+    libtoppra3 Backward::Interface pinocchio::pinocchio
 )

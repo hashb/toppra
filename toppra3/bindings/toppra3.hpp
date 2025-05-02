@@ -11,6 +11,7 @@
 #include "toppra/trajectory_manager.hpp"
 #include "toppra/user_command.hpp"
 #include "toppra/util.hpp"
+#include "toppra/robot_model.hpp"
 
 namespace toppra3 {
 void vectorToEigen(const std::vector<double>& vec, Eigen::VectorXd& eigen_vec) {
@@ -171,7 +172,9 @@ class OutputData {
 class Toppra3Parameterization {
  public:
   Toppra3Parameterization(int num_joints, std::string mjcf_path)
-      : num_joints_(num_joints), mjcf_path_(mjcf_path) {}
+      : num_joints_(num_joints), mjcf_path_(mjcf_path) {
+    robot_model_ = std::make_shared<RobotSystem>(mjcf_path);
+  }
 
   /**
    * @brief Solve for time-optimal trajectory
@@ -187,12 +190,12 @@ class Toppra3Parameterization {
     std::shared_ptr<TrajectoryManager> traj_manager_ =
         std::make_shared<TrajectoryManager>();
     TOPT_DEBUG_MSG("Toppra3Parameterization::solve SETUP 1 (" << clock.stop()
-              << "ms)\n");
+                                                              << "ms)\n");
     clock.start();
     std::shared_ptr<ToptSolver> solver_ =
         std::make_shared<ToptSolver>(num_joints_);
     TOPT_DEBUG_MSG("Toppra3Parameterization::solve SETUP 2 (" << clock.stop()
-              << "ms)\n");
+                                                              << "ms)\n");
     clock.start();
 
     // Convert waypoints to normalized path
@@ -222,7 +225,7 @@ class Toppra3Parameterization {
     // Convert limits to system data format
     SYSTEM_DATA sysdata = input_data.toSystemData(traj_manager_);
     TOPT_DEBUG_MSG("Toppra3Parameterization::solve SOLVE 6 (" << clock.stop()
-              << "ms)\n");
+                                                              << "ms)\n");
     clock.start();
     TOPT_DEBUG_MSG("\n");
 
@@ -317,6 +320,7 @@ class Toppra3Parameterization {
  private:
   int num_joints_;
   std::string mjcf_path_;
+  std::shared_ptr<RobotSystem> robot_model_;
 };
 
 }  // namespace toppra3

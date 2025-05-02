@@ -36,11 +36,11 @@ int main() {
   std::vector<double> global_max_joint_velocity(num_dof);
   global_max_joint_velocity[0] = 1.0;
   global_max_joint_velocity[1] = 1.0;
-  
+
   std::vector<double> global_max_joint_acceleration(num_dof);
   global_max_joint_acceleration[0] = 2.0;
   global_max_joint_acceleration[1] = 2.0;
-  
+
   std::vector<double> global_max_joint_jerk(num_dof);
   global_max_joint_jerk[0] = 5.0;
   global_max_joint_jerk[1] = 5.0;
@@ -70,13 +70,11 @@ int main() {
 
   std::string frame_name = "end_effector";
   std::string mjcf_path = "tests/test_robot.xml";
-  toppra3::InputData limits(num_dof, global_max_joint_velocity,
-                            global_max_joint_acceleration,
-                            global_max_joint_jerk, global_max_joint_torque,
-                            segment_indices, waypoint_scale_factors,
-                            waypoint_max_cart_vel_mm_per_s,
-                            waypoint_max_cart_acc_mm_per_s2, frame_name,
-                            waypoints);
+  toppra3::InputData limits(
+      num_dof, global_max_joint_velocity, global_max_joint_acceleration,
+      global_max_joint_jerk, global_max_joint_torque, segment_indices,
+      waypoint_scale_factors, waypoint_max_cart_vel_mm_per_s,
+      waypoint_max_cart_acc_mm_per_s2, frame_name, waypoints);
 
   // Create parameterization solver
   toppra3::Toppra3Parameterization parameterizer(num_dof, mjcf_path);
