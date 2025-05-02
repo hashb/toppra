@@ -73,7 +73,7 @@ PYBIND11_MODULE(_toppra3, m) {
       .def_readwrite("success", &toppra3::OutputData::success);
 
   py::class_<toppra3::Toppra3Parameterization>(m, "Toppra3Parameterization")
-      .def(py::init<int>())
+      .def(py::init<int, std::string>())
       .def("solve", &toppra3::Toppra3Parameterization::solve,
            py::arg("input_data"), py::arg("use_jerk_limits") = true,
            py::call_guard<py::gil_scoped_release>())

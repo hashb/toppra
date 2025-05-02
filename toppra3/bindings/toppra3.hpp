@@ -170,7 +170,8 @@ class OutputData {
  */
 class Toppra3Parameterization {
  public:
-  Toppra3Parameterization(int num_joints) : num_joints_(num_joints) {}
+  Toppra3Parameterization(int num_joints, std::string mjcf_path)
+      : num_joints_(num_joints), mjcf_path_(mjcf_path) {}
 
   /**
    * @brief Solve for time-optimal trajectory
@@ -315,6 +316,7 @@ class Toppra3Parameterization {
 
  private:
   int num_joints_;
+  std::string mjcf_path_;
 };
 
 }  // namespace toppra3

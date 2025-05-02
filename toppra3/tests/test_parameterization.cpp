@@ -69,7 +69,7 @@ int main() {
   waypoint_max_cart_acc_mm_per_s2[1] = 1000.0;
 
   std::string frame_name = "end_effector";
-
+  std::string mjcf_path = "tests/test_robot.xml";
   toppra3::InputData limits(num_dof, global_max_joint_velocity,
                             global_max_joint_acceleration,
                             global_max_joint_jerk, global_max_joint_torque,
@@ -79,7 +79,7 @@ int main() {
                             waypoints);
 
   // Create parameterization solver
-  toppra3::Toppra3Parameterization parameterizer(num_dof);
+  toppra3::Toppra3Parameterization parameterizer(num_dof, mjcf_path);
 
   // Solve for time-optimal trajectory
   toppra3::OutputData result = parameterizer.solve(limits);
