@@ -1,3 +1,44 @@
+#!/bin/bash
+
+set -e
+dnf install 'dnf-command(config-manager)' -y
+dnf config-manager --set-enabled powertools
+dnf install almalinux-release-devel -y
+dnf groupinstall "Development Tools" -y
+dnf install gcc gcc-c++ -y
+dnf install tinyxml2-devel git cmake cmake-filesystem make  -y
+
+mkdir -p /opt/build /opt/install
+cd /opt/build
+
+export CMAKE_PREFIX_PATH=/opt/install:$CMAKE_PREFIX_PATH
+
+# install console bridge
+git clone https://github.com/ros/console_bridge.git
+cd console_bridge
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/
+make
+make install
+
+# install urdfdom_headers and urdfdom 
+git clone https://github.com/ros/urdfdom_headers.git
+cd urdfdom_headers
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/
+make
+make install
+
+git clone https://github.com/ros/urdfdom.git
+cd urdfdom
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/
+make
+make install
+
 git clone --recursive https://github.com/hashb/pinocchio.git -b use-system-gcc
 cd pinocchio
 
