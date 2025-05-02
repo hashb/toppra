@@ -35,6 +35,7 @@ include_directories(
     /opt/homebrew/include/coinutils/coin
     /opt/homebrew/include/clp
     /opt/homebrew/include/clp/coin
+    /opt/coin/include
 )
 
 
