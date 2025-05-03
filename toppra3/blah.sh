@@ -39,6 +39,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/install/ -DCMAKE
 make
 make install
 
+cd /project
 git clone --recursive https://github.com/hashb/pinocchio.git -b use-system-gcc
 cd pinocchio
 
