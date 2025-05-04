@@ -37,7 +37,7 @@ addopts = "-v --tb=short"
 [tool.cibuildwheel]
 # Only build for Python 3.11 and disable PyPy
 build = "cp311-*"
-skip = "pp* *-musllinux_*"
+skip = "pp* *-musllinux_* *-manylinux_i686"
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
 
@@ -47,21 +47,21 @@ environment = { CMAKE_ARGS="-DCMAKE_POSITION_INDEPENDENT_CODE=ON" }
 [tool.cibuildwheel.linux]
 before-all = [
     # Install dependencies
-    "yum install -y wget sudo binutils-devel boost-devel",
-    # Install Eigen
-    "wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz",
-    "tar -xzf eigen-3.4.0.tar.gz",
-    "cd eigen-3.4.0 && mkdir build && cd build && cmake .. && make install && cd ../..",
+    "yum install -y wget sudo binutils-devel",
+    "chmod u+x blah.sh",
+    "./blah.sh",
+    "cd /project",
     # Install Clp
     "mkdir -p coin && cd coin",
     "wget https://raw.githubusercontent.com/coin-or/coinbrew/master/coinbrew",
     "chmod u+x coinbrew",
     "./coinbrew update --no-prompt",
-    "./coinbrew fetch build Clp@master -j 10 -t none -p /opt/coin",
-    "ls /opt/coin",
+    "./coinbrew fetch build Clp@master -j 10 -t none -p /opt/install",
+    "ls /opt/install",
     "cd ../",
-    "chmod u+x blah.sh",
-    "./blah.sh",
+]
+repair-wheel-command = [
+  "env LD_LIBRARY_PATH=/opt/install/lib:/opt/install/lib64:/opt/install/:/opt/coin:/opt/coin/lib:$LD_LIBRARY_PATH auditwheel repair -w {dest_dir} {wheel}"
 ]
 
 [tool.cibuildwheel.macos]

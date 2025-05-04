@@ -10,7 +10,7 @@ set(PYBIND11_FINDPYTHON ON)
 # add_compile_options(-fsanitize=address)
 # add_link_options(-fsanitize=address)
 
-list(PREPEND CMAKE_PREFIX_PATH "/project/pinocchio/.pixi/envs/all/")
+list(PREPEND CMAKE_PREFIX_PATH "/opt/install")
 
 # Find required packages
 find_package(Eigen3 REQUIRED)
@@ -100,26 +100,26 @@ target_include_directories(_toppra3 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings
 )
 
-add_custom_target(generate_stub ALL
-    COMMAND ${Python_EXECUTABLE} "-m" "pybind11_stubgen" "-o${CMAKE_CURRENT_BINARY_DIR}" "_toppra3"
-    WORKING_DIRECTORY $<TARGET_FILE_DIR:_toppra3>
-    DEPENDS _toppra3
-)
+# add_custom_target(generate_stub ALL
+#     COMMAND ${Python_EXECUTABLE} "-m" "pybind11_stubgen" "-o${CMAKE_CURRENT_BINARY_DIR}" "_toppra3"
+#     WORKING_DIRECTORY $<TARGET_FILE_DIR:_toppra3>
+#     DEPENDS _toppra3
+# )
 
-# rename the generated .pyi file to __init__.pyi
-add_custom_target(rename_pyi ALL
-    COMMAND mv ${CMAKE_CURRENT_BINARY_DIR}/_toppra3.pyi ${CMAKE_CURRENT_BINARY_DIR}/__init__.pyi
-    WORKING_DIRECTORY $<TARGET_FILE_DIR:_toppra3>
-    DEPENDS generate_stub
-)
+# # rename the generated .pyi file to __init__.pyi
+# add_custom_target(rename_pyi ALL
+#     COMMAND mv ${CMAKE_CURRENT_BINARY_DIR}/_toppra3.pyi ${CMAKE_CURRENT_BINARY_DIR}/__init__.pyi
+#     WORKING_DIRECTORY $<TARGET_FILE_DIR:_toppra3>
+#     DEPENDS generate_stub
+# )
 
 # Installation rules
 install(TARGETS _toppra3 LIBRARY DESTINATION toppra3)
-install(DIRECTORY
-    $<TARGET_FILE_DIR:_toppra3>/
-    DESTINATION toppra3
-    FILES_MATCHING REGEX "\.pyi$"
-)
+# install(DIRECTORY
+#     $<TARGET_FILE_DIR:_toppra3>/
+#     DESTINATION toppra3
+#     FILES_MATCHING REGEX "\.pyi$"
+# )
 
 # Add the test file to your test executable
 add_executable(test_parameterization 
