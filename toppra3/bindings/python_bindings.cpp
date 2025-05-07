@@ -16,8 +16,8 @@ PYBIND11_MODULE(_toppra3, m) {
       .def_readwrite("dq", &toppra3::TimedWaypoint::dq)
       .def_readwrite("ddq", &toppra3::TimedWaypoint::ddq)
       .def_readwrite("cart_pos", &toppra3::TimedWaypoint::cart_pos)
-      .def_readwrite("cart_vel", &toppra3::TimedWaypoint::cart_vel)
-      .def_readwrite("cart_acc", &toppra3::TimedWaypoint::cart_acc)
+      .def_readwrite("max_cart_vel", &toppra3::TimedWaypoint::max_cart_vel)
+      .def_readwrite("max_cart_acc", &toppra3::TimedWaypoint::max_cart_acc)
       .def_readwrite("frame_name", &toppra3::TimedWaypoint::frame_name)
       .def_readwrite("time_from_start",
                      &toppra3::TimedWaypoint::time_from_start)
