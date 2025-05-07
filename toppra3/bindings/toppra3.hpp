@@ -125,6 +125,8 @@ class InputData {
     Eigen::MatrixXd J;
     Eigen::VectorXd dJdq;
     Eigen::VectorXd grav{{0., 0., -9.8}};
+    Eigen::VectorXd torque_limits;
+    vectorToEigen(global_max_joint_torque, torque_limits);
 
     double s = 0.;
     double ds = 1. / ((double)(n - 1));
@@ -160,7 +162,7 @@ class InputData {
       sysdata.b[i] = robot_model->getMassMatrix() * ddq +
                      robot_model->getCoriolisMatrix() * dq;
       sysdata.g[i] = robot_model->getGravity();
-      sysdata.tm[i] = robot_model->GetTorqueUpperLimits();
+      sysdata.tm[i] = torque_limits;
 
       // Set limits at each waypoint
       sysdata.av[i] = sysdata.dq[i].cwiseProduct(sysdata.dq[i]);
