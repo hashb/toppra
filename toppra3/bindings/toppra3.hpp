@@ -25,6 +25,20 @@ void eigenToVector(const Eigen::VectorXd& eigen_vec, std::vector<double>& vec) {
   }
 }
 
+void eigenIsometry3dToVector(const Eigen::Isometry3d& eigen_iso, std::vector<double>& vec) {
+  vec.resize(7);
+  Eigen::Vector3d translation(eigen_iso.translation());
+  Eigen::Quaterniond rotation(eigen_iso.rotation());
+  vec[0] = translation[0];
+  vec[1] = translation[1];
+  vec[2] = translation[2];
+
+  vec[3] = rotation.w();
+  vec[4] = rotation.x();
+  vec[5] = rotation.y();
+  vec[6] = rotation.z();
+}
+
 /**
  * @brief Class containing robot joint limits and constraints
  */
@@ -178,8 +192,8 @@ class TimedWaypoint {
 
   std::string frame_name;
   std::vector<double> cart_pos;
-  std::vector<double> cart_vel;
-  std::vector<double> cart_acc;
+  double max_cart_vel;
+  double max_cart_acc;
 
   double time_from_start;
   int segment_index;
@@ -316,11 +330,13 @@ class Toppra3Parameterization {
 
     // copy data to output data
     OutputData output_data;
+    Eigen::VectorXd q_cmd;
+    Eigen::VectorXd qdot_cmd;
+    Eigen::VectorXd qddot_cmd;
+    Eigen::MatrixXd J;
+    Eigen::VectorXd dJdq;
 
     for (int i = 0; i < num_points; i++) {
-      Eigen::VectorXd q_cmd;
-      Eigen::VectorXd qdot_cmd;
-      Eigen::VectorXd qddot_cmd;
       traj_manager_->getCommand(interpolated_times[i], q_cmd, qdot_cmd,
                                 qddot_cmd);
       TimedWaypoint timed_waypoint;
@@ -338,6 +354,26 @@ class Toppra3Parameterization {
           spl_segment_indicies_at_parameterized_times.interpolate(
               interpolated_times[i]);
       timed_waypoint.is_path_position = true;
+
+      // get ee pos, vel, acc
+      robot_model_->updateSystem(q_cmd, qdot_cmd);
+      timed_waypoint.frame_name = input_data.frame_name;
+      eigenIsometry3dToVector(
+          robot_model_->getBodyNodeIsometry(input_data.frame_name),
+          timed_waypoint.cart_pos);
+
+      // Jacobian and its derivative
+      J    = robot_model_->getBodyNodeJacobian(input_data.frame_name);
+      dJdq = robot_model_->getBodyNodeJacobianDotQDot(input_data.frame_name);
+
+      // Compute linear Cartesian velocity and acceleration (first 3 components)
+      // and keep only their maximum value.
+      timed_waypoint.max_cart_vel =
+          (J.bottomRows(3) * qdot_cmd).maxCoeff();
+
+      timed_waypoint.max_cart_acc =
+          (J.bottomRows(3) * qddot_cmd + dJdq.bottomRows(3)).maxCoeff();
+
       output_data.waypoints.push_back(timed_waypoint);
     }
     TOPT_DEBUG_MSG("Toppra3Parameterization::solve POSTPROCESSING 11 ("
