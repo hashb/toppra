@@ -25,7 +25,8 @@ void eigenToVector(const Eigen::VectorXd& eigen_vec, std::vector<double>& vec) {
   }
 }
 
-void eigenIsometry3dToVector(const Eigen::Isometry3d& eigen_iso, std::vector<double>& vec) {
+void eigenIsometry3dToVector(const Eigen::Isometry3d& eigen_iso,
+                             std::vector<double>& vec) {
   vec.resize(7);
   Eigen::Vector3d translation(eigen_iso.translation());
   Eigen::Quaterniond rotation(eigen_iso.rotation());
@@ -365,13 +366,12 @@ class Toppra3Parameterization {
           timed_waypoint.cart_pos);
 
       // Jacobian and its derivative
-      J    = robot_model_->getBodyNodeJacobian(input_data.frame_name);
+      J = robot_model_->getBodyNodeJacobian(input_data.frame_name);
       dJdq = robot_model_->getBodyNodeJacobianDotQDot(input_data.frame_name);
 
       // Compute linear Cartesian velocity and acceleration (first 3 components)
       // and keep only their maximum value.
-      timed_waypoint.max_cart_vel =
-          (J.bottomRows(3) * qdot_cmd).maxCoeff();
+      timed_waypoint.max_cart_vel = (J.bottomRows(3) * qdot_cmd).maxCoeff();
 
       timed_waypoint.max_cart_acc =
           (J.bottomRows(3) * qddot_cmd + dJdq.bottomRows(3)).maxCoeff();
