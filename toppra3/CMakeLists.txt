@@ -99,7 +99,8 @@ target_include_directories(_toppra3 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings
 )
-
+install(TARGETS _toppra3 LIBRARY DESTINATION toppra3)
+    
 if (APPLE)
     set(GENERATE_STUBS_CMD "${Python_EXECUTABLE} -m pybind11_stubgen -o${CMAKE_CURRENT_BINARY_DIR} _toppra3")
 else()
@@ -119,7 +120,6 @@ add_custom_target(rename_pyi ALL
 )
 
 # Installation rules
-install(TARGETS _toppra3 LIBRARY DESTINATION toppra3)
 install(DIRECTORY
     $<TARGET_FILE_DIR:_toppra3>/
     DESTINATION toppra3
