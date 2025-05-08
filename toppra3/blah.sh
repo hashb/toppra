@@ -20,9 +20,6 @@ echo "export LD_LIBRARY_PATH=/opt/install/lib:/opt/install/lib64:$LD_LIBRARY_PAT
 
 cat ~/.bashrc
 
-sleep 1000
-
-exit 0
 # Download Boost 1.68 source code
 wget https://archives.boost.io/release/1.68.0/source/boost_1_68_0.tar.gz
 
