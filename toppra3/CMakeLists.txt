@@ -102,7 +102,7 @@ target_include_directories(_toppra3 PRIVATE
 install(TARGETS _toppra3 LIBRARY DESTINATION toppra3)
     
 if (APPLE)
-    set(GENERATE_STUBS_CMD "${Python_EXECUTABLE} -m pybind11_stubgen -o${CMAKE_CURRENT_BINARY_DIR} _toppra3")
+    set(GENERATE_STUBS_CMD ${Python_EXECUTABLE} "-m" "pybind11_stubgen" "-o" "${CMAKE_CURRENT_BINARY_DIR}" "_toppra3")
 else()
     set(GENERATE_STUBS_CMD "bash -i -c \"python -m pybind11_stubgen -o${CMAKE_CURRENT_BINARY_DIR} _toppra3\"")
 endif()
