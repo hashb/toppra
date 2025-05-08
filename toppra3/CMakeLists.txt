@@ -136,3 +136,19 @@ target_include_directories(test_parameterization PUBLIC
 target_link_libraries(test_parameterization PRIVATE
     libtoppra3 Backward::Interface pinocchio::pinocchio
 )
+
+
+add_executable(test_robot_system 
+    tests/test_robot_system.cpp
+)
+
+target_include_directories(test_robot_system PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${EIGEN3_INCLUDE_DIR}
+)
+
+# Link against the main library
+target_link_libraries(test_robot_system PRIVATE
+    libtoppra3 Backward::Interface pinocchio::pinocchio
+)
