@@ -100,8 +100,13 @@ target_include_directories(_toppra3 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings
 )
 
+if (APPLE)
+    set(GENERATE_STUBS_CMD "${Python_EXECUTABLE} -m pybind11_stubgen -o${CMAKE_CURRENT_BINARY_DIR} _toppra3")
+else()
+    set(GENERATE_STUBS_CMD "bash -i -c \"python -m pybind11_stubgen -o${CMAKE_CURRENT_BINARY_DIR} _toppra3\"")
+endif()
 add_custom_target(generate_stub ALL
-    COMMAND bash -i -c "python -m pybind11_stubgen -o${CMAKE_CURRENT_BINARY_DIR} _toppra3"
+    COMMAND ${GENERATE_STUBS_CMD}
     WORKING_DIRECTORY $<TARGET_FILE_DIR:_toppra3>
     DEPENDS _toppra3
 )
