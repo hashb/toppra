@@ -371,10 +371,14 @@ class Toppra3Parameterization {
 
       // Compute linear Cartesian velocity and acceleration (first 3 components)
       // and keep only their maximum value.
-      timed_waypoint.max_cart_vel = (J.bottomRows(3) * qdot_cmd).maxCoeff();
+      timed_waypoint.max_cart_vel = (J.bottomRows(3) * qdot_cmd).maxCoeff() * 1e3;
 
       timed_waypoint.max_cart_acc =
-          (J.bottomRows(3) * qddot_cmd + dJdq.bottomRows(3)).maxCoeff();
+          (J.bottomRows(3) * qddot_cmd + dJdq.bottomRows(3)).maxCoeff() * 1e3;
+
+      TOPT_DEBUG_MSG("max cart vel: " << timed_waypoint.max_cart_vel
+                                      << " max cart acc: "
+                                      << timed_waypoint.max_cart_acc);
 
       output_data.waypoints.push_back(timed_waypoint);
     }
