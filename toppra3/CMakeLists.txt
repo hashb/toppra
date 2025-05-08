@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(toppra3 VERSION 0.1.3)
+project(toppra3 VERSION 0.2.0)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
