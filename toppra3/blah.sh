@@ -14,9 +14,9 @@ export CMAKE_PREFIX_PATH=/opt/install:$CMAKE_PREFIX_PATH
 export BOOST_ROOT=/opt/install
 
 # add to .bashrc
-echo "export CMAKE_PREFIX_PATH=/opt/install:$CMAKE_PREFIX_PATH" >> ~/.bashrc
-echo "export BOOST_ROOT=/opt/install" >> ~/.bashrc
-echo "export LD_LIBRARY_PATH=/opt/install/lib:/opt/install/lib64:$LD_LIBRARY_PATH" >> ~/.bashrc
+echo 'export CMAKE_PREFIX_PATH=/opt/install:$CMAKE_PREFIX_PATH' >> ~/.bashrc
+echo 'export BOOST_ROOT=/opt/install' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=/opt/install/lib:/opt/install/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
 
 cat ~/.bashrc
 
