@@ -101,7 +101,7 @@ target_include_directories(_toppra3 PRIVATE
 )
 
 add_custom_target(generate_stub ALL
-    COMMAND bash -c "cat ~/.bashrc && python -m pybind11_stubgen -o${CMAKE_CURRENT_BINARY_DIR} _toppra3"
+    COMMAND bash -c "source ~/.bashrc; python -m pybind11_stubgen -o${CMAKE_CURRENT_BINARY_DIR} _toppra3"
     WORKING_DIRECTORY $<TARGET_FILE_DIR:_toppra3>
     DEPENDS _toppra3
 )
