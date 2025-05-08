@@ -365,6 +365,12 @@ class Toppra3Parameterization {
           robot_model_->getBodyNodeIsometry(input_data.frame_name),
           timed_waypoint.cart_pos);
 
+      TOPT_DEBUG_MSG("target frame name: " << input_data.frame_name << std::endl);
+      TOPT_DEBUG_MSG("q_cmd: " << q_cmd.transpose() << std::endl);
+      TOPT_DEBUG_MSG("qdot_cmd: " << qdot_cmd.transpose() << std::endl);
+      TOPT_DEBUG_MSG("qddot_cmd: " << qddot_cmd.transpose() << std::endl);
+      TOPT_DEBUG_MSG("cart_pos: " << robot_model_->getBodyNodeIsometry(input_data.frame_name).translation().transpose() << std::endl);
+
       // Jacobian and its derivative
       J = robot_model_->getBodyNodeJacobian(input_data.frame_name);
       dJdq = robot_model_->getBodyNodeJacobianDotQDot(input_data.frame_name);
@@ -378,7 +384,8 @@ class Toppra3Parameterization {
 
       TOPT_DEBUG_MSG("max cart vel: " << timed_waypoint.max_cart_vel
                                       << " max cart acc: "
-                                      << timed_waypoint.max_cart_acc);
+                                      << timed_waypoint.max_cart_acc
+                                      << std::endl);
 
       output_data.waypoints.push_back(timed_waypoint);
     }
