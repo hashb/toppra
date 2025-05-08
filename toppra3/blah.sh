@@ -18,6 +18,10 @@ echo "export CMAKE_PREFIX_PATH=/opt/install:$CMAKE_PREFIX_PATH" >> ~/.bashrc
 echo "export BOOST_ROOT=/opt/install" >> ~/.bashrc
 echo "export LD_LIBRARY_PATH=/opt/install/lib:/opt/install/lib64:$LD_LIBRARY_PATH" >> ~/.bashrc
 
+cat ~/.bashrc
+
+sleep 1000
+
 # Download Boost 1.68 source code
 wget https://archives.boost.io/release/1.68.0/source/boost_1_68_0.tar.gz
 
@@ -165,7 +169,6 @@ cd /opt/build
 git clone --recursive https://github.com/hashb/pinocchio.git -b use-system-gcc
 cd pinocchio
 
-# install pixi
 mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=/opt/install/ -DCMAKE_BUILD_TYPE=Release \
@@ -174,6 +177,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=/opt/install/ -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_WITH_AUTODIFF_SUPPORT=OFF -DBUILD_WITH_EXTRA_SUPPORT=OFF \
   -DBUILD_WITH_OPENMP_SUPPORT=OFF -DBUILD_WITH_CODEGEN_SUPPORT=OFF \
   -DBUILD_WITH_SDF_SUPPORT=OFF -DBUILD_PYTHON_BINDINGS_WITH_BOOST_MPFR_SUPPORT=OFF \
-  -DBUILD_BENCHMARK=OFF -DBoost_NO_BOOST_CMAKE=ON -DBUILD_PYTHON_INTERFACE=OFF
+  -DBUILD_BENCHMARK=OFF -DBoost_NO_BOOST_CMAKE=ON -DBUILD_PYTHON_INTERFACE=OFF \
+  -DBUILD_UNIT_TESTS=OFF
 make install -j $(nproc)
 
