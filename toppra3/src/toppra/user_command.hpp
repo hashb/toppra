@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <iostream>
+#include <vector>
 
 class SYSTEM_DATA {
  public:

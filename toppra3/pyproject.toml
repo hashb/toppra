@@ -67,7 +67,7 @@ repair-wheel-command = [
 [tool.cibuildwheel.macos]
 before-all = "brew install eigen clp coinutils pinocchio"
 archs = ["arm64"]
-environment = { MACOSX_DEPLOYMENT_TARGET="15.0" }
+environment = { MACOSX_DEPLOYMENT_TARGET="12.0" }
 repair-wheel-command = [
   "env DYLD_LIBRARY_PATH=/opt/homebrew/opt/pinocchio/lib:$DYLD_LIBRARY_PATH delocate-wheel --require-archs arm64 -w {dest_dir} {wheel}"
 ]
