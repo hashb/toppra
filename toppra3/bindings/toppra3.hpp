@@ -220,8 +220,8 @@ class OutputData {
  */
 class Toppra3Parameterization {
  public:
-  Toppra3Parameterization(int num_joints, std::string mjcf_path)
-      : num_joints_(num_joints), mjcf_path_(mjcf_path) {
+  Toppra3Parameterization(int num_joints, std::string mjcf_path, double min_interpolation_time)
+      : num_joints_(num_joints), mjcf_path_(mjcf_path), min_interpolation_time_(min_interpolation_time) {
     robot_model_ = std::make_shared<RobotSystem>(mjcf_path);
   }
 
@@ -323,7 +323,7 @@ class Toppra3Parameterization {
     // Interpolate times
     std::vector<double> interpolated_times;
     double duration = traj_manager_->getMotionPeriod();
-    double interval = 0.01;  // 10ms
+    double interval = min_interpolation_time_;
 
     int num_points = std::ceil(duration / interval) + 1;
     interpolated_times.resize(num_points);
@@ -400,6 +400,7 @@ class Toppra3Parameterization {
  private:
   int num_joints_;
   std::string mjcf_path_;
+  double min_interpolation_time_;
   std::shared_ptr<RobotSystem> robot_model_;
 };
 
