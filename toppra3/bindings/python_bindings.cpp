@@ -70,13 +70,14 @@ PYBIND11_MODULE(_toppra3, m) {
   py::class_<toppra3::OutputData>(m, "OutputData")
       .def(py::init<>())
       .def_readwrite("waypoints", &toppra3::OutputData::waypoints)
-      .def_readwrite("success", &toppra3::OutputData::success);
+      .def_readwrite("success", &toppra3::OutputData::success)
+      .def_readwrite("total_time", &toppra3::OutputData::total_time);
 
   py::class_<toppra3::Toppra3Parameterization>(m, "Toppra3Parameterization")
       .def(py::init<int, std::string, double>(), py::arg("num_joints"),
            py::arg("robot_mjcf_path"), py::arg("min_interpolation_time"))
       .def("solve", &toppra3::Toppra3Parameterization::solve,
-           py::arg("input_data"), py::arg("use_jerk_limits") = true,
+           py::arg("input_data"), py::arg("use_jerk_limits") = true, py::arg("return_only_time") = false,
            py::call_guard<py::gil_scoped_release>())
       .def("get_num_joints", &toppra3::Toppra3Parameterization::getNumJoints);
 }

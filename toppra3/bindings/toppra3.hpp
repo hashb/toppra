@@ -212,6 +212,7 @@ class OutputData {
   OutputData() = default;
   bool success;
   std::vector<TimedWaypoint> waypoints;
+  double total_time;
 };
 
 /**
@@ -232,7 +233,7 @@ class Toppra3Parameterization {
    * @param use_jerk_limits Whether to include jerk constraints
    * @return true if solution found
    */
-  OutputData solve(const InputData& input_data, bool use_jerk_limits = true) {
+  OutputData solve(const InputData& input_data, bool use_jerk_limits = true, bool return_only_time = false) {
     Clock clock;
     clock.start();
     TOPT_DEBUG_MSG("Toppra3Parameterization::solve SETUP 0\n");
@@ -286,6 +287,13 @@ class Toppra3Parameterization {
     if (!success) {
       OutputData output_data;
       output_data.success = false;
+      return output_data;
+    }
+
+    if (return_only_time) {
+      OutputData output_data;
+      output_data.success = true;
+      output_data.total_time = traj_manager_->getMotionPeriod();
       return output_data;
     }
 
