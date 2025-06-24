@@ -262,8 +262,8 @@ class Toppra3Parameterization {
       eigen_waypoints.push_back(eigen_waypoint);
     }
 
-    traj_manager_->redistQwptsPureNormDist(eigen_waypoints,
-                                           normalized_waypoints);
+    Eigen::VectorXd vel_max = Eigen::Map<const Eigen::VectorXd>(input_data.global_max_joint_velocity.data(), input_data.global_max_joint_velocity.size());
+    traj_manager_->redistQwpts1st(eigen_waypoints, vel_max, normalized_waypoints);
     TOPT_DEBUG_MSG("Toppra3Parameterization::solve PREPROCESSING 4 ("
                    << clock.stop() << "ms)\n");
     clock.start();
