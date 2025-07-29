@@ -14,17 +14,16 @@ if(${PYTHON_BINDINGS})
 
   # Build bindings ###################################################
   find_package(Python COMPONENTS Interpreter Development)
-  set(PYBIND11_FINDPYTHON ON)
-  find_package(pybind11 CONFIG REQUIRED)
+  find_package(pybind11 REQUIRED)
   ## Ref: https://pybind11.readthedocs.io/en/stable/cmake/index.html
   message(STATUS "Found ${PYTHON_INCLUDE_DIR} ${PYTHON_EXECUTABLE}")
   pybind11_add_module(toppra_int toppra_int.cpp bindings.cpp
     constraints.cpp paths.cpp)
-  target_link_libraries(toppra_int PUBLIC toppra rossy_utils)
+  target_link_libraries(toppra_int PUBLIC toppra)
   target_include_directories(toppra_int PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
   set_target_properties(toppra_int PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${TOPPRA_PYTHON_SOURCE_DIR}
-  )
+    )
   if(BUILD_WITH_PINOCCHIO)
     target_compile_options(toppra_int PRIVATE -DBUILD_WITH_PINOCCHIO)
     target_link_libraries(toppra_int PUBLIC pinocchio::pinocchio)
@@ -34,6 +33,5 @@ if(${PYTHON_BINDINGS})
       target_link_libraries(toppra_int PUBLIC Boost::python${PYTHON_VERSION})
     endif()
   endif()
-  install(TARGETS toppra_int LIBRARY DESTINATION toppra)
 
 endif()

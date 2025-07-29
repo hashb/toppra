@@ -389,10 +389,15 @@ void TrajectoryManager::redistQwpts1st(
 
   spline_s2q_.initialize(qwpts[0].size());
   spline_s2q_.setType(SplineType::SAMEJERK);
+  std::vector<double> slist;
   for (int i(0); i < num_wpts; i++) {
     s = qarclengths[i] / qarclength;
     spline_s2q_.push_back(s, qwpts[i]);
+    slist.push_back(s);
   }
+  // copy slist to s2q_times_
+  s2q_times_ = slist;
+
   spline_s2q_.compute();
 
   qwpts.clear();
@@ -404,6 +409,7 @@ void TrajectoryManager::redistQwpts1st(
     s = ((double)i / (double)(num_new_wpts - 1));
     q_uni = spline_s2q_.evaluate(s);
     qwpts.push_back(q_uni);
+    s2q_gridpoints_.push_back(s);
   }
 }
 
