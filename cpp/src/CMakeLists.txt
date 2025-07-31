@@ -6,6 +6,7 @@ set(SOURCE_FILES
   toppra/constraint/linear_joint_acceleration.cpp
   toppra/constraint/joint_torque.cpp
   toppra/constraint/cartesian_velocity_norm.cpp
+  toppra/constraint/joint_jerk.cpp
 
   toppra/solver.cpp
   toppra/solver/seidel.cpp
@@ -20,6 +21,7 @@ set(SOURCE_FILES
 
   toppra/algorithm.cpp
   toppra/algorithm/toppra.cpp
+  toppra/algorithm/toppra3.cpp
 
   toppra/trajectory_manager.cpp
   toppra/topt_solver.cpp
@@ -87,12 +89,14 @@ install(FILES
   DESTINATION include/toppra)
 install(FILES
   toppra/algorithm/toppra.hpp
+  toppra/algorithm/toppra3.hpp
   DESTINATION include/toppra/algorithm)
 install(FILES
   toppra/constraint/linear_joint_velocity.hpp
   toppra/constraint/linear_joint_acceleration.hpp
   toppra/constraint/joint_torque.hpp
   toppra/constraint/cartesian_velocity_norm.hpp
+  toppra/constraint/joint_jerk.hpp
   DESTINATION include/toppra/constraint)
 install(FILES
   toppra/geometric_path/piecewise_poly_path.hpp

@@ -67,6 +67,7 @@ namespace toppra {
     class LinearJointVelocity;
     class LinearJointAcceleration;
     class JointTorque;
+    class JointJerkConstraint;
   } // namespace constraint
 
   class Solver;
